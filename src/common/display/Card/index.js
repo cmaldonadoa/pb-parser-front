@@ -12,15 +12,17 @@ export default function Card({
   return (
     <div
       style={{
-        height: 165,
-        background: disabled
-          ? "var(--color-1-text)"
+        height: 144,
+        background: disabled ? "var(--color-1-text)" : "white",
+        borderRadius: 5,
+        border: "2px solid",
+        borderColor: disabled
+          ? "var(--detail)"
           : green
           ? "var(--color-2)"
           : "var(--color-1)",
-        borderRadius: 5,
         cursor: disabled ? "not-allowed" : "pointer",
-        color: "white",
+        color: disabled ? "white" : green ? "var(--color-2)" : "var(--color-1)",
         padding: "18px",
       }}
       onClick={disabled ? () => {} : action}
@@ -31,7 +33,12 @@ export default function Card({
       <Row justify="space-between" align="bottom" style={{ height: "50%" }}>
         <Col>{description}</Col>
         <Col>
-          <span className="text-sm">{actionTitle}</span>
+          <span
+            className="text-sm"
+            style={{ color: disabled ? "white" : "#007bff" }}
+          >
+            {actionTitle}
+          </span>
         </Col>
       </Row>
     </div>
