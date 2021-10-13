@@ -1,21 +1,32 @@
-import { Button, Col, Row } from "antd";
-import React from "react";
+import { Button, Col, Row, Dropdown, Menu } from "antd";
+import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router";
-
-const TextButton = ({ children }) => {
-  return (
-    <Button
-      type="text"
-      className="text-sm text-bold"
-      style={{ color: "var(--color-1-text)" }}
-    >
-      {children}
-    </Button>
-  );
-};
+import jwt_decode from "jwt-decode";
+import { DownOutlined } from "@ant-design/icons";
 
 export default function Header({ leftButton, rightButton }) {
   const history = useHistory();
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    try {
+      const jwt = sessionStorage.getItem("auth");
+      const decoded = jwt_decode(jwt);
+      setUsername(decoded.username);
+    } catch {}
+  }, []);
+
+  const logOut = () => {
+    sessionStorage.removeItem("auth");
+    history.push("/");
+  };
+
+  const menu = (
+    <Menu style={{ borderRadius: 5 }} onClick={logOut}>
+      <Menu.Item>Cerrar sesión</Menu.Item>
+    </Menu>
+  );
+
   return (
     <header
       style={{
@@ -50,21 +61,29 @@ export default function Header({ leftButton, rightButton }) {
           />
         </Col>
         <Col>
-          <TextButton onClick={leftButton.onClick}>
-            {leftButton.content}
-          </TextButton>
-        </Col>
-        <Col>
-          <TextButton onClick={rightButton.onClick}>
-            {rightButton.content}
-          </TextButton>
-        </Col>
-        <Col style={{ height: "100%" }}>
-          <img
-            src="/parpro.svg"
-            alt="Logo PARPro"
-            style={{ maxHeight: "100%" }}
-          />
+          <Row align="middle" gutter={12}>
+            {!!username && (
+              <Col>
+                <Dropdown overlay={menu} placement="bottomRight">
+                  <Button
+                    type="text"
+                    className="text-sm text-bold"
+                    style={{ color: "var(--color-1-text)" }}
+                  >
+                    {username} <DownOutlined className="text-xs" />
+                  </Button>
+                </Dropdown>
+              </Col>
+            )}
+            <Col style={{ height: "100%" }}>
+              <img
+                src="/parpro.svg"
+                alt="Logo PARPro"
+                style={{ maxHeight: "100%", cursor: "pointer" }}
+                onClick={() => history.push("/")}
+              />
+            </Col>
+          </Row>
         </Col>
       </Row>
     </header>
