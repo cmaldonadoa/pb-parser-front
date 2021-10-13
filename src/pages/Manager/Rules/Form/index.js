@@ -19,7 +19,7 @@ import { useHistory, useLocation } from "react-router";
 const Icon = () => <TiPlus style={{ marginRight: 4 }} />;
 
 const BasicInfoWindow = ({ data, onChange }) => {
-  const { name, modelTypes, description, group } = data;
+  const { name, modelTypes, description, group, newGroupName } = data;
   const [groups, setGroups] = useState([]);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const BasicInfoWindow = ({ data, onChange }) => {
     <Window title={"Características"}>
       <Form
         onChange={onChange}
-        values={{ name, description, modelTypes, group }}
+        values={{ name, description, modelTypes, group, newGroupName }}
       >
         <TextInput required name={"name"} label="Nombre de la regla" />
         <TextInput name={"description"} label="Descripción" />
@@ -58,6 +58,7 @@ const BasicInfoWindow = ({ data, onChange }) => {
           ]}
         />
         <RadioInput
+          flex="none"
           required
           name={"group"}
           label="Grupo"
@@ -66,12 +67,13 @@ const BasicInfoWindow = ({ data, onChange }) => {
             { label: "Otro", value: -1 },
           ]}
         />
+        {group === -1 && <TextInput name="newGroupName" />}
       </Form>
     </Window>
   );
 };
 
-const Constraint = ({ data, onChange, deleteValue }) => {
+const Constraint = ({ data, onChange, deleteValue, onDelete }) => {
   const { index, type, on, attribute, values, operation, pset } = data;
   const [value, setValue] = useState("");
 
@@ -101,7 +103,12 @@ const Constraint = ({ data, onChange, deleteValue }) => {
           padding: 18,
         }}
       >
-        Restricción
+        <Row justify="space-between">
+          <Col>Restricción</Col>
+          <Col>
+            <DeleteAction onClick={onDelete} />
+          </Col>
+        </Row>
         <div
           style={{
             marginTop: 12,
@@ -203,17 +210,20 @@ const FilterWindow = ({
       setSaveDisabled(
         !name ||
           entities.length === 0 ||
-          constraints.some(
-            (e) =>
-              !e.type ||
-              !e.on ||
-              !e.attribute ||
-              !e.operation ||
-              (e.operation !== "EXISTS" &&
-                e.operation !== "NOT_EXISTS" &&
-                e.values.length === 0) ||
-              (e.type === "PSET_QTO" && !e.pset)
-          )
+          constraints.filter((e) => !!e).length === 0 ||
+          constraints
+            .filter((e) => !!e)
+            .some(
+              (e) =>
+                !e.type ||
+                !e.on ||
+                !e.attribute ||
+                !e.operation ||
+                (e.operation !== "EXISTS" &&
+                  e.operation !== "NOT_EXISTS" &&
+                  e.values.length === 0) ||
+                (e.type === "PSET_QTO" && !e.pset)
+            )
       ),
     [name, spaces, entities, constraints, setSaveDisabled]
   );
@@ -249,15 +259,18 @@ const FilterWindow = ({
           onDelete={(e) => deleteEntity({ entity: e })}
         />
       </Form>
-      {constraints.map((e, i) => (
-        <Constraint
-          key={i}
-          data={e}
-          onChange={onChangeConstraint}
-          onDelete={deleteConstraint}
-          deleteValue={deleteValue}
-        />
-      ))}
+      {constraints.map(
+        (e, i) =>
+          !!e && (
+            <Constraint
+              key={i}
+              data={e}
+              onChange={onChangeConstraint}
+              onDelete={() => deleteConstraint(index, i)}
+              deleteValue={deleteValue}
+            />
+          )
+      )}
       <Row justify="space-between" align="bottom" style={{ marginTop: 24 }}>
         <Col>
           <IconButton
@@ -306,6 +319,7 @@ export default function RulesForm({ data }) {
   const [nextDisabled, setNextDisabled] = useState(true);
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const [savedFilters, setSavedFilters] = useState([]);
+  const [newGroupName, setNewGroupName] = useState("");
   const [currentData, setCurrentData] = useState({
     name: "",
     description: "",
@@ -348,7 +362,6 @@ export default function RulesForm({ data }) {
     });
 
   const applyFilter = (index) => setSavedFilters([...savedFilters, index]);
-
   const removeAppliedFilter = (index) =>
     setSavedFilters([...savedFilters.filter((e) => e !== index)]);
 
@@ -376,7 +389,9 @@ export default function RulesForm({ data }) {
     setCurrentData((prevState) => {
       const filters = [...prevState.filters];
       const filter = filters[fIndex];
-      filter.constraints = filter.constraints.filter((e, i) => i !== cIndex);
+      const constraints = [...filter.constraints];
+      delete constraints[cIndex];
+      filter.constraints = constraints;
       filters[fIndex] = filter;
       return {
         ...prevState,
@@ -421,7 +436,13 @@ export default function RulesForm({ data }) {
         return { ...prevState, filters };
       });
 
-  const onChangeBasicInfo = ({ name, group, modelTypes, description }) =>
+  const onChangeBasicInfo = ({
+    name,
+    group,
+    modelTypes,
+    description,
+    newGroupName,
+  }) => {
     setCurrentData((prevState) => ({
       ...prevState,
       ...(group !== undefined && { group }),
@@ -429,6 +450,8 @@ export default function RulesForm({ data }) {
       ...(modelTypes !== undefined && { modelTypes }),
       ...(description !== undefined && { description }),
     }));
+    newGroupName !== undefined && setNewGroupName(newGroupName);
+  };
 
   const onChangeFilter =
     (fIndex) =>
@@ -491,7 +514,11 @@ export default function RulesForm({ data }) {
           currentData.modelTypes.length === 0 ||
           !currentData.group
       );
-    else if (currentStep < 2) setNextDisabled(savedFilters.length === 0);
+    else if (currentStep < 2)
+      setNextDisabled(
+        savedFilters.length === 0 ||
+          savedFilters.length < currentData.filters.filter((e) => !!e).length
+      );
     else if (currentStep < 3) setNextDisabled(!currentData.formula);
   }, [currentData, setNextDisabled, currentStep, savedFilters]);
 
@@ -501,32 +528,69 @@ export default function RulesForm({ data }) {
       : `${process.env.REACT_APP_API}/rules`;
 
     const dataCopy = { ...currentData };
-    dataCopy.filters = currentData.filters.map((e) => ({
-      ...e,
-      spaces: !!e.spaces ? [e.spaces] : [],
-    }));
+    dataCopy.filters = currentData.filters
+      .filter((e) => !!e)
+      .map((e) => ({
+        ...e,
+        constraints: e.constraints.filter((c) => !!c),
+        spaces: !!e.spaces ? [e.spaces] : [],
+      }));
 
-    fetch(url, {
-      method: !!state ? "PUT" : "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: sessionStorage.getItem("auth"),
-      },
-      body: JSON.stringify(dataCopy),
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        setOpenSuccessModal(true);
-        window.setTimeout(
-          () =>
-            history.push("/manager/rules", {
-              ruleId: res.ruleId,
-              groupId: currentData.group,
-            }),
-          3000
-        );
-      })
-      .catch((err) => console.log(err));
+    dataCopy.group === -1
+      ? fetch(`${process.env.REACT_APP_API}/groups`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: sessionStorage.getItem("auth"),
+          },
+          body: JSON.stringify({ name: newGroupName }),
+        })
+          .then((res) => res.json())
+          .then((res) => res.group)
+          .then((groupId) =>
+            fetch(url, {
+              method: !!state ? "PUT" : "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: sessionStorage.getItem("auth"),
+              },
+              body: JSON.stringify({ ...dataCopy, group: groupId }),
+            })
+          )
+          .then((res) => res.json())
+          .then((res) => {
+            setOpenSuccessModal(true);
+            window.setTimeout(
+              () =>
+                history.push("/manager/rules", {
+                  ruleId: res.ruleId,
+                  groupId: 1,
+                }),
+              3000
+            );
+          })
+          .catch((err) => console.log(err))
+      : fetch(url, {
+          method: !!state ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: sessionStorage.getItem("auth"),
+          },
+          body: JSON.stringify(dataCopy),
+        })
+          .then((res) => res.json())
+          .then((res) => {
+            setOpenSuccessModal(true);
+            window.setTimeout(
+              () =>
+                history.push("/manager/rules", {
+                  ruleId: res.ruleId,
+                  groupId: currentData.group,
+                }),
+              3000
+            );
+          })
+          .catch((err) => console.log(err));
   };
 
   useEffect(() => {
@@ -588,27 +652,30 @@ export default function RulesForm({ data }) {
           <Col lg={24}>
             {currentStep < 1 ? (
               <BasicInfoWindow
-                data={currentData}
+                data={{ ...currentData, newGroupName }}
                 onChange={onChangeBasicInfo}
               />
             ) : currentStep < 2 ? (
               <>
-                {currentData.filters.map((e) => (
-                  <FilterWindow
-                    key={e.index}
-                    saved={savedFilters.indexOf(e.index) >= 0}
-                    data={e}
-                    addContraint={addContraint}
-                    deleteConstraint={deleteConstraint}
-                    onChange={onChangeFilter(e.index)}
-                    onChangeConstraint={onChangeConstraint(e.index)}
-                    deleteFilter={() => deleteFilter(e.index)}
-                    saveFilter={() => applyFilter(e.index)}
-                    undoSaveFilter={() => removeAppliedFilter(e.index)}
-                    deleteValue={deleteValue(e.index)}
-                    deleteEntity={deleteEntity(e.index)}
-                  />
-                ))}
+                {currentData.filters.map(
+                  (e) =>
+                    !!e && (
+                      <FilterWindow
+                        key={e.index}
+                        saved={savedFilters.indexOf(e.index) >= 0}
+                        data={e}
+                        addContraint={addContraint}
+                        deleteConstraint={deleteConstraint}
+                        onChange={onChangeFilter(e.index)}
+                        onChangeConstraint={onChangeConstraint(e.index)}
+                        deleteFilter={() => deleteFilter(e.index)}
+                        saveFilter={() => applyFilter(e.index)}
+                        undoSaveFilter={() => removeAppliedFilter(e.index)}
+                        deleteValue={deleteValue(e.index)}
+                        deleteEntity={deleteEntity(e.index)}
+                      />
+                    )
+                )}
                 <IconButton
                   style={{ marginBottom: 24 }}
                   icon={<TiPlus />}
