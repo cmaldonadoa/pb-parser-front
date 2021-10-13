@@ -436,20 +436,26 @@ export default function TendersForm({ data }) {
         .then((response) => response.json())
         .then((success) => {
           const o = success.tender;
-          delete Object.assign(o, {
-            region: "" + o.region_id,
-          })["region_id"];
-          delete Object.assign(o, {
-            commune: "" + o.commune_id,
-          })["commune_id"];
-          delete Object.assign(o, {
-            type: o.building_type_name,
-          })["building_type_name"];
           setCurrentData({
-            ...o,
-            isHandicapVulnerable: o.handicapVulnerable > 0,
-            isHandicapMedios1: o.handicapMedios1 > 0,
-            isHandicapMedios2: o.handicapMedios2 > 0,
+            name: o.name,
+            region: "" + o.region_id,
+            commune: "" + o.commune_id,
+            address: o.address,
+            propertyRole: o.property_role,
+            constructabilityCoef: o.constructability_coef,
+            soilOccupancyCoef: o.soil_occupancy_coef,
+            type: o.building_type_name,
+            angle: o.angle,
+            vulnerable: o.vulnerable,
+            handicapVulnerable: o.handicap_vulnerable,
+            medios1: o.medios_1,
+            handicapMedios1: o.handicap_medios_1,
+            medios2: o.medios_2,
+            handicapMedios2: o.handicap_medios_2,
+            total: o.total,
+            isHandicapVulnerable: o.handicap_vulnerable > 0,
+            isHandicapMedios1: o.handicap_medios_1 > 0,
+            isHandicapMedios2: o.handicap_medios_2 > 0,
           });
           setCurrentStep(2);
           setLoaded(true);
