@@ -19,26 +19,51 @@ export default function Footer() {
           paddingBottom: 25,
         }}
         justify="space-between"
+        align="stretch"
       >
-        <Col style={{ height: "100%" }}>
+        <Col
+          flex="auto"
+          style={{
+            height: "100%",
+            justifyContent: "start",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <img
             src="/corfo.svg"
             alt="Logo CORFO"
-            style={{ maxHeight: "100%" }}
+            style={{ maxHeight: "100%", maxWidth: 150 }}
           />
         </Col>
-        <Col style={{ height: "100%" }}>
+        <Col
+          flex="auto"
+          style={{
+            height: "100%",
+            justifyContent: "center",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <img
-            src="https://via.placeholder.com/200/"
+            src="/velociti.svg"
             alt="Logo VelociTI"
-            style={{ maxHeight: "100%" }}
+            style={{ maxHeight: "100%", maxWidth: 150 }}
           />
         </Col>
-        <Col style={{ height: "100%" }}>
+        <Col
+          flex="auto"
+          style={{
+            height: "100%",
+            justifyContent: "end",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <img
             src="/planbim.svg"
             alt="Logo PlanBIM"
-            style={{ maxHeight: "100%" }}
+            style={{ maxHeight: "100%", maxWidth: 150 }}
           />
         </Col>
       </Row>
