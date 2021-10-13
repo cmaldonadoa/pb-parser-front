@@ -2,7 +2,7 @@ import { Button, Col, Row, Collapse } from "antd";
 import React from "react";
 import { useHistory } from "react-router";
 
-const Item = ({ number, name, to, state, shine, endIcon }) => {
+const Item = ({ number, name, to, state, shine, endIcon, actions }) => {
   const history = useHistory();
 
   const redirect = () => history.push(to, state);
@@ -34,7 +34,7 @@ const Item = ({ number, name, to, state, shine, endIcon }) => {
         <Col flex="auto">
           <Row justify="space-between" className="text-sm">
             <Col>{name}</Col>
-            <Col>{!!endIcon ? endIcon : "Ver detalle"}</Col>
+            <Col>{!!endIcon ? endIcon : actions}</Col>
           </Row>
         </Col>
       </Row>
@@ -111,6 +111,7 @@ export default function List({ data, collapsable }) {
               to={d.to}
               state={d.state}
               endIcon={d.endIcon}
+              actions={d.actions}
             />
           )
         )
