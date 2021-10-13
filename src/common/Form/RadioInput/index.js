@@ -40,9 +40,8 @@ export default function RadioInput({
               <Button
                 green={green}
                 outline
-                selected={e.value === values[name]}
                 onClick={() => onChange(getArg(e.value))}
-                disabled={disabled}
+                disabled={disabled || e.value === values[name]}
               >
                 {e.label}
               </Button>
