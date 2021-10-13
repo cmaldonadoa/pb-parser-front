@@ -9,7 +9,7 @@ import List from "common/display/List";
 import Table from "common/display/Table";
 import Window from "common/display/Window";
 import Form from "common/Form";
-import { DeleteAction, EditAction } from "common/Form/ActionButton";
+import { DeleteAction } from "common/Form/ActionButton";
 import FilledButton from "common/Form/Button";
 import CheckboxInput from "common/Form/CheckboxInput";
 import RadioInput from "common/Form/RadioInput";
@@ -18,7 +18,7 @@ import Steps from "common/Form/Steps";
 import Layout from "common/Layout";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
-import "./index.scss";
+import { useHistory } from "react-router";
 
 const colorSwitch = (s) => {
   if ("boolean" === typeof s && s) {
@@ -27,7 +27,7 @@ const colorSwitch = (s) => {
   if ("boolean" === typeof s && !s) {
     return "#D9534F";
   }
-  return "blue";
+  return "var(--color-1)";
 };
 
 const iconSwitch = (s) => {
@@ -43,10 +43,6 @@ const iconSwitch = (s) => {
   }
   return <MinusCircleFilled style={{ fontSize: 18, color: colorSwitch(s) }} />;
 };
-
-function Result({ data }) {
-  return <>{JSON.stringify(data)}</>;
-}
 
 const UploadWindow = ({ onClick }) => {
   const hiddenFileInput = React.useRef(null);
@@ -174,9 +170,9 @@ const ResultWindow = ({ groupId, data }) => {
 
   Object.keys(data).forEach((k) => {
     const ruleResult = data[k];
-    if (ruleResult.result === true) passing += 1 / Object.keys(data).length;
-    else if (ruleResult.result === false) error += 1 / Object.keys(data).length;
-    else pending += 1 / Object.keys(data).length;
+    if (ruleResult.result === true) passing += 1;
+    else if (ruleResult.result === false) error += 1;
+    else pending += 1;
   });
 
   useEffect(() => {
@@ -207,7 +203,7 @@ const ResultWindow = ({ groupId, data }) => {
                     className="text-lg text-bold"
                     style={{ color: "var(--color-1)" }}
                   >
-                    {Math.round(passing * 100)}%
+                    {passing}
                   </span>
                 </Col>
                 <Col>
@@ -227,7 +223,7 @@ const ResultWindow = ({ groupId, data }) => {
                     className="text-lg text-bold"
                     style={{ color: "var(--color-1)" }}
                   >
-                    {Math.round(error * 100)}%
+                    {error}
                   </span>
                 </Col>
                 <Col>
@@ -247,7 +243,7 @@ const ResultWindow = ({ groupId, data }) => {
                     className="text-lg text-bold"
                     style={{ color: "var(--color-1)" }}
                   >
-                    {Math.round(pending * 100)}%
+                    {pending}
                   </span>
                 </Col>
                 <Col>
@@ -283,14 +279,7 @@ const ResultWindow = ({ groupId, data }) => {
               name: data[e].name,
               endIcon: iconSwitch(data[e].result),
               color: colorSwitch(data[e].result),
-              content: (
-                <>
-                  <em>{data[e].description}</em>
-                  {Object.keys(data[e].filter).map((k) => (
-                    <Result data={data[e].filter[k]} />
-                  ))}
-                </>
-              ),
+              content: <em>{data[e].description}</em>,
             }))}
           />
         </Col>
@@ -300,6 +289,8 @@ const ResultWindow = ({ groupId, data }) => {
 };
 
 export default function ModelValidator({ ...props }) {
+  const history = useHistory();
+
   const [currentStep, setCurrentStep] = useState(0);
   const [nextDisabled, setNextDisabled] = useState(false);
 
@@ -392,10 +383,32 @@ export default function ModelValidator({ ...props }) {
       .catch((error) => console.log(error));
   };
 
+  const deleteFile = (id) =>
+    fetch(`${process.env.REACT_APP_API}/files/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: sessionStorage.getItem("auth"),
+      },
+    })
+      .then((success) =>
+        fetch(`${process.env.REACT_APP_API}/files`, {
+          method: "GET",
+          headers: {
+            Authorization: sessionStorage.getItem("auth"),
+          },
+        })
+      )
+      .then((response) => response.json())
+      .then((success) =>
+        setFiles(success.files.sort((a, b) => a.upload_date < b.upload_date))
+      )
+      .catch((error) => console.log(error));
+
   useEffect(() => {
     if (currentStep < 1) setNextDisabled(!fileId);
     else if (currentStep < 2) setNextDisabled(groupIds.length === 0);
     else if (currentStep < 3) setNextDisabled(!tenderId);
+    else setNextDisabled(false);
   }, [setNextDisabled, fileId, currentStep, groupIds, tenderId]);
 
   return (
@@ -436,10 +449,7 @@ export default function ModelValidator({ ...props }) {
                 actions: (
                   <Row gutter={12}>
                     <Col>
-                      <EditAction onClick={() => {}} />
-                    </Col>
-                    <Col>
-                      <DeleteAction onClick={() => {}} />
+                      <DeleteAction onClick={() => deleteFile(e.file_id)} />
                     </Col>
                   </Row>
                 ),
@@ -490,9 +500,14 @@ export default function ModelValidator({ ...props }) {
               currentStep === 0 && setCurrentStep(1);
               currentStep === 1 && onClickParse();
               currentStep === 2 && onClickValidate();
+              currentStep === 3 && history.push("/");
             }}
           >
-            {currentStep < 2 ? "Siguiente" : "Validar"}
+            {currentStep < 2
+              ? "Siguiente"
+              : currentStep < 3
+              ? "Validar"
+              : "Finalizar"}
           </FilledButton>
         </Col>
       </Row>
