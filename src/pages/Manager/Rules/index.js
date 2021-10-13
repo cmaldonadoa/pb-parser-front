@@ -1,5 +1,6 @@
 import { Col, Row, Tabs } from "antd";
 import List from "common/display/List";
+import { DeleteAction, EditAction } from "common/Form/ActionButton";
 import FilledButton from "common/Form/Button";
 import Layout from "common/Layout";
 import React, { useEffect, useState } from "react";
@@ -15,6 +16,28 @@ export default function Rules() {
   const [groups, setGroups] = useState([]);
   const [currentGroup, setCurrentGroup] = useState(0);
   const [rules, setRules] = useState([]);
+
+  const deleteRule = (id) =>
+    fetch(`${process.env.REACT_APP_API}/rules/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: sessionStorage.getItem("auth"),
+      },
+    })
+      .then((response) => response.json())
+      .then((success) =>
+        fetch(`${process.env.REACT_APP_API}/rules/${currentGroup}`, {
+          method: "GET",
+          headers: {
+            Authorization: sessionStorage.getItem("auth"),
+          },
+        })
+      )
+      .then((response) => response.json())
+      .then((success) => {
+        setRules(success.rules);
+      })
+      .catch((error) => console.log(error));
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API}/groups`, {
@@ -89,6 +112,21 @@ export default function Rules() {
                   ruleId: e.rule_id,
                   groupId: currentGroup,
                 },
+                actions: (
+                  <Row gutter={16} style={{ zIndex: 10 }}>
+                    <Col>
+                      <DeleteAction
+                        onClick={(event) => {
+                          deleteRule(e.rule_id);
+                          event.stopPropagation();
+                        }}
+                      />
+                    </Col>
+                    <Col>
+                      <EditAction />
+                    </Col>
+                  </Row>
+                ),
               }))}
             />
           </TabPane>
