@@ -1,8 +1,9 @@
-import { Button, Col, Row } from "antd";
+import { Col, Row } from "antd";
 import Form from "common/Form";
 import FilledButton from "common/Form/Button";
 import TextInput from "common/Form/TextInput";
 import Layout from "common/Layout";
+import jwt_decode from "jwt-decode";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   RiEyeFill,
@@ -10,7 +11,6 @@ import {
   RiLock2Fill,
   RiUserFill,
 } from "react-icons/ri";
-import jwt_decode from "jwt-decode";
 import { useHistory } from "react-router";
 
 const EyeIcon = ({ open, onClick }) => {
@@ -113,20 +113,6 @@ export default function Login({ ...props }) {
               }
             />
           </Form>
-
-          <Row justify="end">
-            <Col>
-              <Button
-                type="text"
-                className="text-xs text-italic"
-                style={{
-                  color: "var(--color-1)",
-                }}
-              >
-                ¿Olvidaste tu contraseña?
-              </Button>
-            </Col>
-          </Row>
 
           <Row justify="center" style={{ marginTop: 48 }}>
             <Col lg="auto">
