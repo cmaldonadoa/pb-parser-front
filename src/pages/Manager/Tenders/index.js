@@ -1,6 +1,7 @@
 import { Col, Row } from "antd";
 import List from "common/display/List";
 import FilledButton from "common/Form/Button";
+import { DeleteAction, EditAction } from "common/Form/ActionButton";
 import Layout from "common/Layout";
 import React, { useEffect, useState } from "react";
 import { TiPlus } from "react-icons/ti";
@@ -11,6 +12,28 @@ const Icon = () => <TiPlus style={{ marginRight: 4 }} />;
 export default function Rules({ ...props }) {
   const { state } = useLocation();
   const [tenders, setTenders] = useState([]);
+
+  const deleteTender = (id) =>
+    fetch(`${process.env.REACT_APP_API}/tenders/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: sessionStorage.getItem("auth"),
+      },
+    })
+      .then((response) => response.json())
+      .then((success) =>
+        fetch(`${process.env.REACT_APP_API}/tenders`, {
+          method: "GET",
+          headers: {
+            Authorization: sessionStorage.getItem("auth"),
+          },
+        })
+      )
+      .then((response) => response.json())
+      .then((success) => {
+        setTenders(success.tenders);
+      })
+      .catch((error) => console.log(error));
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API}/tenders`, {
@@ -57,6 +80,21 @@ export default function Rules({ ...props }) {
           state: {
             tenderId: e.tender_id,
           },
+          actions: (
+            <Row gutter={16} style={{ zIndex: 10 }}>
+              <Col>
+                <DeleteAction
+                  onClick={(event) => {
+                    deleteTender(e.tender_id);
+                    event.stopPropagation();
+                  }}
+                />
+              </Col>
+              <Col>
+                <EditAction />
+              </Col>
+            </Row>
+          ),
         }))}
       />
     </Layout>
