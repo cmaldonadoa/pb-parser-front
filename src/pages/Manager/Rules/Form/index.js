@@ -19,7 +19,8 @@ import { useHistory, useLocation } from "react-router";
 const Icon = () => <TiPlus style={{ marginRight: 4 }} />;
 
 const BasicInfoWindow = ({ data, onChange }) => {
-  const { name, modelTypes, description, group, newGroupName } = data;
+  const { name, modelTypes, buildingTypes, description, group, newGroupName } =
+    data;
   const [groups, setGroups] = useState([]);
 
   useEffect(() => {
@@ -43,18 +44,34 @@ const BasicInfoWindow = ({ data, onChange }) => {
     <Window title={"Características"}>
       <Form
         onChange={onChange}
-        values={{ name, description, modelTypes, group, newGroupName }}
+        values={{
+          name,
+          description,
+          modelTypes,
+          buildingTypes,
+          group,
+          newGroupName,
+        }}
       >
         <TextInput required name={"name"} label="Nombre de la regla" />
         <TextInput name={"description"} label="Descripción" />
         <CheckboxInput
           required
           name={"modelTypes"}
-          label="Aplica a"
+          label="Tipo de modelo al que aplicará"
           options={[
             { label: "Arquitectura", value: "ARQUITECTURA" },
             { label: "Volumétrico", value: "VOLUMETRICO" },
             { label: "Sitio", value: "SITIO" },
+          ]}
+        />
+        <CheckboxInput
+          required
+          name={"buildingTypes"}
+          label="Tipo de construcción al que aplicará"
+          options={[
+            { label: "Casas", value: "HOUSE" },
+            { label: "Edificios", value: "APARTMENT" },
           ]}
         />
         <RadioInput
@@ -325,6 +342,7 @@ export default function RulesForm({ data }) {
     description: "",
     formula: "",
     modelTypes: [],
+    buildingTypes: [],
     group: null,
     filters: [],
   });
@@ -440,6 +458,7 @@ export default function RulesForm({ data }) {
     name,
     group,
     modelTypes,
+    buildingTypes,
     description,
     newGroupName,
   }) => {
@@ -448,6 +467,7 @@ export default function RulesForm({ data }) {
       ...(group !== undefined && { group }),
       ...(name !== undefined && { name }),
       ...(modelTypes !== undefined && { modelTypes }),
+      ...(buildingTypes !== undefined && { buildingTypes }),
       ...(description !== undefined && { description }),
     }));
     newGroupName !== undefined && setNewGroupName(newGroupName);
@@ -512,6 +532,7 @@ export default function RulesForm({ data }) {
       setNextDisabled(
         !currentData.name ||
           currentData.modelTypes.length === 0 ||
+          currentData.buildingTypes.length === 0 ||
           !currentData.group
       );
     else if (currentStep < 2)
