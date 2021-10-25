@@ -364,6 +364,7 @@ export default function ModelValidator({ ...props }) {
     const body = new FormData();
     body.append("file_id", fileId);
     body.append("group_ids", groupIds);
+    body.append("tender_id", tenderId);
 
     fetch(`${process.env.REACT_APP_API}/check`, {
       method: "POST",
