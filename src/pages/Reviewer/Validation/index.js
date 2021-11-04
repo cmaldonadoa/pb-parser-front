@@ -8,6 +8,7 @@ import { Col, Divider, Row } from "antd";
 import List from "common/display/List";
 import Table from "common/display/Table";
 import Window from "common/display/Window";
+import { ErrorModal } from "common/display/Modal";
 import Form from "common/Form";
 import { DeleteAction } from "common/Form/ActionButton";
 import FilledButton from "common/Form/Button";
@@ -293,6 +294,7 @@ export default function ModelValidator({ ...props }) {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [nextDisabled, setNextDisabled] = useState(false);
+  const [openErrorModal, setOpenErrorModal] = useState(false);
 
   const [files, setFiles] = useState([]);
 
@@ -331,11 +333,16 @@ export default function ModelValidator({ ...props }) {
         Authorization: sessionStorage.getItem("auth"),
       },
     })
+      .then((res) => {
+        if (res.status === 200) return res;
+        else throw new Error();
+      })
       .then((res) => res.json())
       .then((res) => {
         setFileId(res.id);
         callback();
-      });
+      })
+      .catch((err) => setOpenErrorModal(true));
   };
 
   const onClickParse = () => {
@@ -351,12 +358,16 @@ export default function ModelValidator({ ...props }) {
         Authorization: sessionStorage.getItem("auth"),
       },
     })
+      .then((res) => {
+        if (res.status === 200) return res;
+        else throw new Error();
+      })
       .then((response) => {
         setParsing(false);
         return response.json();
       })
       .then((success) => setCurrentStep(2))
-      .catch((error) => console.log(error));
+      .catch((err) => setOpenErrorModal(true));
   };
 
   const onClickValidate = () => {
@@ -373,6 +384,10 @@ export default function ModelValidator({ ...props }) {
         Authorization: sessionStorage.getItem("auth"),
       },
     })
+      .then((res) => {
+        if (res.status === 200) return res;
+        else throw new Error();
+      })
       .then((response) => {
         setValidating(false);
         return response.json();
@@ -381,7 +396,7 @@ export default function ModelValidator({ ...props }) {
         setCurrentStep(3);
         setResults(success.data);
       })
-      .catch((error) => console.log(error));
+      .catch((err) => setOpenErrorModal(true));
   };
 
   const deleteFile = (id) =>
@@ -512,6 +527,15 @@ export default function ModelValidator({ ...props }) {
           </FilledButton>
         </Col>
       </Row>
+
+      <ErrorModal
+        open={openErrorModal}
+        title={"Se ha producido un error"}
+        onClose={() => {
+          setOpenErrorModal(false);
+          setNextDisabled(false);
+        }}
+      />
     </Layout>
   );
 }
