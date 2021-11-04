@@ -489,7 +489,7 @@ export default function TendersForm() {
               </Col>
             </Row>
 
-            <h1>Nuevo llamado</h1>
+            <h1>{!!state ? "Editar" : "Nuevo"} llamado</h1>
           </Col>
 
           <Steps
@@ -564,7 +564,9 @@ export default function TendersForm() {
 
       <SuccessModal
         open={openSuccessModal}
-        title={"Has creado un llamado con éxito"}
+        title={`Se ha ${
+          !!state ? "actualizado" : "creado"
+        } el llamado con éxito`}
       />
 
       <ErrorModal

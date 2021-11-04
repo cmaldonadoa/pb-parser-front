@@ -669,7 +669,7 @@ export default function RulesForm() {
               </Col>
             </Row>
 
-            <h1>Nueva regla</h1>
+            <h1>{!!state ? "Editar" : "Nueva"} regla</h1>
           </Col>
 
           <Steps
@@ -753,7 +753,7 @@ export default function RulesForm() {
 
       <SuccessModal
         open={openSuccessModal}
-        title={"Has creado una regla con éxito"}
+        title={`Se ha ${!!state ? "actualizado" : "creado"} la regla con éxito`}
       />
 
       <ErrorModal
