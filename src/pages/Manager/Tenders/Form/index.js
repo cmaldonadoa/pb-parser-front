@@ -1,6 +1,6 @@
 import { Col, Row } from "antd";
 import Card from "common/display/Card";
-import SuccessModal from "common/display/Modal";
+import { SuccessModal, ErrorModal } from "common/display/Modal";
 import Window from "common/display/Window";
 import Form from "common/Form";
 import { EditAction } from "common/Form/ActionButton";
@@ -298,6 +298,7 @@ export default function TendersForm({ data }) {
   const [currentStep, setCurrentStep] = useState(-1);
   const [nextDisabled, setNextDisabled] = useState(true);
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
+  const [openErrorModal, setOpenErrorModal] = useState(false);
   const [currentData, setCurrentData] = useState({
     name: "",
     region: "",
@@ -383,6 +384,10 @@ export default function TendersForm({ data }) {
       },
       body: JSON.stringify(currentData),
     })
+      .then((res) => {
+        if (res.status === 200) return res;
+        else throw new Error();
+      })
       .then((res) => res.json())
       .then((res) => {
         setOpenSuccessModal(true);
@@ -394,7 +399,7 @@ export default function TendersForm({ data }) {
           3000
         );
       })
-      .catch((err) => console.log(err));
+      .catch((err) => setOpenErrorModal(true));
   };
 
   useEffect(() => {
@@ -560,6 +565,15 @@ export default function TendersForm({ data }) {
       <SuccessModal
         open={openSuccessModal}
         title={"Has creado un llamado con éxito"}
+      />
+
+      <ErrorModal
+        open={openErrorModal}
+        title={"Se ha producido un error"}
+        onClose={() => {
+          setOpenErrorModal(false);
+          setNextDisabled(false);
+        }}
       />
     </>
   );

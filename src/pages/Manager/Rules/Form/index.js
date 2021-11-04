@@ -1,5 +1,5 @@
 import { Col, Divider, Row } from "antd";
-import SuccessModal from "common/display/Modal";
+import { SuccessModal, ErrorModal } from "common/display/Modal";
 import Window from "common/display/Window";
 import Form from "common/Form";
 import { DeleteAction, EditAction } from "common/Form/ActionButton";
@@ -335,6 +335,7 @@ export default function RulesForm({ data }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [nextDisabled, setNextDisabled] = useState(true);
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
+  const [openErrorModal, setOpenErrorModal] = useState(false);
   const [savedFilters, setSavedFilters] = useState([]);
   const [newGroupName, setNewGroupName] = useState("");
   const [currentData, setCurrentData] = useState({
@@ -566,6 +567,10 @@ export default function RulesForm({ data }) {
           },
           body: JSON.stringify({ name: newGroupName }),
         })
+          .then((res) => {
+            if (res.status === 200) return res;
+            else throw new Error();
+          })
           .then((res) => res.json())
           .then((res) => res.group)
           .then((groupId) =>
@@ -590,7 +595,7 @@ export default function RulesForm({ data }) {
               3000
             );
           })
-          .catch((err) => console.log(err))
+          .catch((err) => setOpenErrorModal(true))
       : fetch(url, {
           method: !!state ? "PUT" : "POST",
           headers: {
@@ -599,6 +604,10 @@ export default function RulesForm({ data }) {
           },
           body: JSON.stringify(dataCopy),
         })
+          .then((res) => {
+            if (res.status === 200) return res;
+            else throw new Error();
+          })
           .then((res) => res.json())
           .then((res) => {
             setOpenSuccessModal(true);
@@ -745,6 +754,15 @@ export default function RulesForm({ data }) {
       <SuccessModal
         open={openSuccessModal}
         title={"Has creado una regla con éxito"}
+      />
+
+      <ErrorModal
+        open={openErrorModal}
+        title={"Se ha producido un error"}
+        onClose={() => {
+          setOpenErrorModal(false);
+          setNextDisabled(false);
+        }}
       />
     </>
   );
