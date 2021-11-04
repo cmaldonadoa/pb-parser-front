@@ -96,6 +96,7 @@ const Constraint = ({ data, onChange, deleteValue, onDelete }) => {
 
   const onFormChange = ({ type, on, attribute, operation, pset, value }) => {
     const valueEnded = !!value && value.slice(-1) === ",";
+    const partialValue = !!value && value.slice(0, -1);
 
     onChange({
       index,
@@ -104,7 +105,8 @@ const Constraint = ({ data, onChange, deleteValue, onDelete }) => {
       attribute,
       operation,
       pset,
-      ...(valueEnded && { value: value.slice(0, -1) }),
+      ...(valueEnded &&
+        !values.includes(partialValue) && { value: partialValue }),
     });
     valueEnded ? setValue("") : setValue(value);
   };
@@ -210,15 +212,23 @@ const FilterWindow = ({
   const { index, name, spaces, entities, constraints } = data;
   const [entity, setEntity] = useState("");
   const [saveDisabled, setSaveDisabled] = useState(true);
+  const [dbEntities, setDbEntities] = useState([]);
 
   const onFormChange = ({ name, spaces, entity }) => {
     const entityEnded = !!entity && entity.slice(-1) === ",";
+    const partialEntity = !!entity && entity.slice(0, -1);
+    const isValidEntity = !!partialEntity && dbEntities.includes(partialEntity);
+    const isAlreadyIncluded =
+      !!partialEntity && entities.includes(partialEntity);
 
     onChange({
       name,
       spaces,
-      ...(entityEnded && { entity: entity.slice(0, -1) }),
+      ...(entityEnded &&
+        isValidEntity &&
+        !isAlreadyIncluded && { entity: partialEntity }),
     });
+
     entityEnded ? setEntity("") : setEntity(entity);
   };
 
@@ -245,6 +255,23 @@ const FilterWindow = ({
     [name, spaces, entities, constraints, setSaveDisabled]
   );
 
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_API}/entities`, {
+      method: "GET",
+      headers: {
+        Authorization: sessionStorage.getItem("auth"),
+      },
+    })
+      .then((response) => response.json())
+      .then((success) => {
+        const responseEntities = success.entities
+          .map((e) => e.name)
+          .sort((a, b) => a > b);
+        setDbEntities(responseEntities);
+      })
+      .catch((error) => console.log(error));
+  }, []);
+
   return saved ? (
     <Window title={"Filtro"}>
       <Row justify="space-between" align="bottom">
@@ -270,6 +297,7 @@ const FilterWindow = ({
         <TextInput name={"spaces"} label="Recinto" />
         <TextInput
           required
+          options={dbEntities}
           multiple={entities}
           name={"entity"}
           label="Entidades IFC"
@@ -377,6 +405,7 @@ export default function RulesForm() {
     setCurrentData((prevState) => {
       const filters = [...prevState.filters];
       delete filters[index];
+      removeAppliedFilter(index);
       return { ...prevState, filters };
     });
 
