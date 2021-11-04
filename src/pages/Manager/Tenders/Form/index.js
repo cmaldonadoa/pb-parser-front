@@ -291,7 +291,7 @@ const RequirementsWindow = ({ data, onChange, disabled, onEdit }) => {
   );
 };
 
-export default function TendersForm({ data }) {
+export default function TendersForm() {
   const { state } = useLocation();
   const history = useHistory();
   const [loaded, setLoaded] = useState(false);

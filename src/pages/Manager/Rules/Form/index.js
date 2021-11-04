@@ -329,7 +329,7 @@ const FormulaWindow = ({ data, onChange }) => {
   );
 };
 
-export default function RulesForm({ data }) {
+export default function RulesForm() {
   const { state } = useLocation();
   const history = useHistory();
   const [currentStep, setCurrentStep] = useState(0);
