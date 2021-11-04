@@ -150,21 +150,38 @@ const Constraint = ({ data, onChange, deleteValue, onDelete }) => {
               options={[
                 { label: "Atributo", value: "ATTRIBUTE" },
                 { label: "Pset/Qto", value: "PSET_QTO" },
-                ...(type !== "TYPE"
+                ...(on !== "TYPE"
                   ? [{ label: "Ubicación", value: "LOCATION" }]
                   : []),
               ]}
             />
             {type === "PSET_QTO" ? (
-              <TextInput label="Nombre de la propiedad" name={"pset"} />
+              <TextInput label="Nombre del Pset/Qto" name={"pset"} />
             ) : null}
 
             <FormRow>
-              <TextInput
-                span={6}
-                label="Nombre del atributo"
-                name={"attribute"}
-              />
+              {type === "LOCATION" ? (
+                <SelectInput
+                  span={6}
+                  label="Eje de coordenadas"
+                  name={"attribute"}
+                  options={[
+                    { label: "Eje X", value: "x" },
+                    { label: "Eje Y", value: "y" },
+                    { label: "Eje Z", value: "z" },
+                  ]}
+                />
+              ) : (
+                <TextInput
+                  span={6}
+                  label={
+                    type === "PSET_QTO"
+                      ? "Nombre de la propiedad"
+                      : "Nombre del atributo"
+                  }
+                  name={"attribute"}
+                />
+              )}
               <SelectInput
                 span={3}
                 label="Operación"
@@ -537,12 +554,20 @@ export default function RulesForm() {
         constraints[index] = {
           ...constraint,
           ...(operation !== undefined && { operation }),
-          ...(on !== undefined && { on }),
+          ...(on !== undefined &&
+            (constraint.type === "LOCATION"
+              ? { on, type: "ATTRIBUTE", attribute: null }
+              : { on })),
           ...(attribute !== undefined && { attribute }),
           ...(pset !== undefined && { pset }),
-          ...(type !== undefined && { type }),
+          ...(type !== undefined &&
+            (constraint.type === "LOCATION"
+              ? { type, attribute: null }
+              : { type })),
           ...{ values: newValues },
         };
+
+        console.log(constraints[index]);
 
         filters[fIndex] = {
           ...filter,
