@@ -5,10 +5,12 @@ import Login from "pages/Login";
 import Manager from "pages/Manager";
 import Rules from "pages/Manager/Rules";
 import RuleForm from "pages/Manager/Rules/Form";
-import Tenders from "pages/Manager/Tenders";
+import AdminTenders from "pages/Manager/Tenders";
 import TendersForm from "pages/Manager/Tenders/Form";
 import Reviewer from "pages/Reviewer";
 import ModelValidator from "pages/Reviewer/Validation";
+import ReviewerTenders from "pages/Reviewer/Tenders";
+import TendersView from "pages/Reviewer/Tenders/Form";
 import React, { useCallback, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import {
@@ -50,6 +52,12 @@ const Site = () => {
           <Route path="/reviewer/validate">
             {!isReviewer ? <Redirect to="/" /> : <ModelValidator />}
           </Route>
+          <Route path="/reviewer/tenders/view">
+            {!isReviewer ? <Redirect to="/" /> : <TendersView />}
+          </Route>
+          <Route path="/reviewer/tenders">
+            {!isReviewer ? <Redirect to="/" /> : <ReviewerTenders />}
+          </Route>
           <Route path="/reviewer">
             {!isReviewer ? <Redirect to="/" /> : <Reviewer />}
           </Route>
@@ -69,7 +77,7 @@ const Site = () => {
             {!isAdmin ? <Redirect to="/" /> : <TendersForm />}
           </Route>
           <Route path="/manager/tenders">
-            {!isAdmin ? <Redirect to="/" /> : <Tenders />}
+            {!isAdmin ? <Redirect to="/" /> : <AdminTenders />}
           </Route>
           <Route path="/manager">
             {!isAdmin ? <Redirect to="/" /> : <Manager />}

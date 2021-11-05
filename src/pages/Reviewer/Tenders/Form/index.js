@@ -1,21 +1,14 @@
 import { Col, Row } from "antd";
 import Card from "common/display/Card";
-import { SuccessModal, ErrorModal } from "common/display/Modal";
 import Window from "common/display/Window";
 import Form from "common/Form";
-import { EditAction } from "common/Form/ActionButton";
-import FilledButton from "common/Form/Button";
 import RadioInput from "common/Form/RadioInput";
 import FormRow from "common/Form/Row";
 import SelectInput from "common/Form/SelectInput";
-import Steps from "common/Form/Steps";
 import TextInput from "common/Form/TextInput";
 import Layout from "common/Layout";
 import React, { useEffect, useState } from "react";
-import { TiPlus } from "react-icons/ti";
-import { useHistory, useLocation } from "react-router";
-
-const Icon = () => <TiPlus style={{ marginRight: 4 }} />;
+import { useLocation } from "react-router";
 
 const TypeSelectWindow = ({ onClick }) => (
   <Window title={"Tipo de llamado"}>
@@ -177,13 +170,6 @@ const BasicInfoWindow = ({ data, onChange, disabled, onEdit }) => {
           ]}
         />
       </Form>
-      {disabled && (
-        <Row justify="end">
-          <Col>
-            <EditAction onClick={onEdit} />
-          </Col>
-        </Row>
-      )}
     </Window>
   );
 };
@@ -280,25 +266,14 @@ const RequirementsWindow = ({ data, onChange, disabled, onEdit }) => {
           />
         </FormRow>
       </Form>
-      {disabled && (
-        <Row justify="end">
-          <Col>
-            <EditAction onClick={onEdit} />
-          </Col>
-        </Row>
-      )}
     </Window>
   );
 };
 
 export default function TendersForm() {
   const { state } = useLocation();
-  const history = useHistory();
   const [loaded, setLoaded] = useState(false);
   const [currentStep, setCurrentStep] = useState(!!state ? 3 : -1);
-  const [nextDisabled, setNextDisabled] = useState(true);
-  const [openSuccessModal, setOpenSuccessModal] = useState(false);
-  const [openErrorModal, setOpenErrorModal] = useState(false);
   const [currentData, setCurrentData] = useState({
     name: "",
     region: "",
@@ -371,64 +346,6 @@ export default function TendersForm() {
       ...(isHandicapMedios2 !== undefined && { isHandicapMedios2 }),
     }));
 
-  const uploadTender = () => {
-    const url = !!state
-      ? `${process.env.REACT_APP_API}/tenders/${state.tenderId}`
-      : `${process.env.REACT_APP_API}/tenders`;
-
-    fetch(url, {
-      method: !!state ? "PUT" : "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: sessionStorage.getItem("auth"),
-      },
-      body: JSON.stringify(currentData),
-    })
-      .then((res) => {
-        if (res.status === 200) return res;
-        else throw new Error();
-      })
-      .then((res) => res.json())
-      .then((res) => {
-        setOpenSuccessModal(true);
-        window.setTimeout(
-          () =>
-            history.push("/manager/tenders", {
-              tenderId: res.tenderId,
-            }),
-          3000
-        );
-      })
-      .catch((err) => setOpenErrorModal(true));
-  };
-
-  useEffect(() => {
-    if (currentStep < 1)
-      setNextDisabled(
-        !currentData.name ||
-          !currentData.region ||
-          !currentData.commune ||
-          !currentData.address ||
-          !currentData.propertyRole ||
-          !currentData.constructabilityCoef ||
-          !currentData.soilOccupancyCoef ||
-          !currentData.type ||
-          !currentData.angle
-      );
-    else if (currentStep < 2)
-      setNextDisabled(
-        !currentData.vulnerable ||
-          (currentData.isHandicapVulnerable &&
-            !currentData.handicapVulnerable) ||
-          !currentData.medios1 ||
-          (currentData.isHandicapMedios1 && !currentData.handicapMedios1) ||
-          !currentData.medios2 ||
-          (currentData.isHandicapMedios2 && !currentData.handicapMedios2) ||
-          !currentData.total
-      );
-    else if (currentStep < 3) setNextDisabled(false);
-  }, [currentData, setNextDisabled, currentStep]);
-
   useEffect(() => {
     !!state &&
       !loaded &&
@@ -476,27 +393,8 @@ export default function TendersForm() {
       >
         <Row>
           <Col xs={24}>
-            <Row justify="end" gutter={48}>
-              <Col lg="auto">
-                <FilledButton to={"/manager/tenders/new"}>
-                  <Icon /> Nuevo llamado
-                </FilledButton>
-              </Col>
-              <Col lg="auto">
-                <FilledButton green to={"/manager/rules/new"}>
-                  <Icon /> Nueva regla
-                </FilledButton>
-              </Col>
-            </Row>
-
-            <h1>{!!state ? "Editar" : "Nuevo"} llamado</h1>
+            <h1>Ver llamado</h1>
           </Col>
-
-          <Steps
-            style={{ display: currentStep < 0 && "none" }}
-            currentStep={currentStep}
-            steps={["Características", "Requisitos", "Resumen"]}
-          />
         </Row>
 
         <Row>
@@ -529,54 +427,7 @@ export default function TendersForm() {
             )}
           </Col>
         </Row>
-
-        <Row
-          justify={currentStep > 0 ? "space-between" : "end"}
-          align="bottom"
-          style={{ marginTop: 24, display: currentStep < 0 && "none" }}
-        >
-          <Col style={currentStep === 0 ? { display: "none" } : {}}>
-            <FilledButton
-              green
-              outline
-              onClick={() => {
-                setCurrentStep(currentStep - 1);
-              }}
-            >
-              Anterior
-            </FilledButton>
-          </Col>
-          <Col>
-            <FilledButton
-              disabled={nextDisabled}
-              green
-              onClick={() => {
-                setCurrentStep(currentStep + 1);
-                setNextDisabled(true);
-                currentStep >= 2 && uploadTender();
-              }}
-            >
-              {currentStep < 2 ? "Siguiente" : "Finalizar"}
-            </FilledButton>
-          </Col>
-        </Row>
       </Layout>
-
-      <SuccessModal
-        open={openSuccessModal}
-        title={`Se ha ${
-          !!state ? "actualizado" : "creado"
-        } el llamado con éxito`}
-      />
-
-      <ErrorModal
-        open={openErrorModal}
-        title={"Se ha producido un error"}
-        onClose={() => {
-          setOpenErrorModal(false);
-          setNextDisabled(false);
-        }}
-      />
     </>
   );
 }

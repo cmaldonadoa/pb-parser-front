@@ -1,5 +1,5 @@
 import { Col, Divider, Row } from "antd";
-import SuccessModal from "common/display/Modal";
+import { SuccessModal, ErrorModal } from "common/display/Modal";
 import Window from "common/display/Window";
 import Form from "common/Form";
 import { DeleteAction, EditAction } from "common/Form/ActionButton";
@@ -96,6 +96,7 @@ const Constraint = ({ data, onChange, deleteValue, onDelete }) => {
 
   const onFormChange = ({ type, on, attribute, operation, pset, value }) => {
     const valueEnded = !!value && value.slice(-1) === ",";
+    const partialValue = !!value && value.slice(0, -1);
 
     onChange({
       index,
@@ -104,7 +105,8 @@ const Constraint = ({ data, onChange, deleteValue, onDelete }) => {
       attribute,
       operation,
       pset,
-      ...(valueEnded && { value: value.slice(0, -1) }),
+      ...(valueEnded &&
+        !values.includes(partialValue) && { value: partialValue }),
     });
     valueEnded ? setValue("") : setValue(value);
   };
@@ -148,21 +150,38 @@ const Constraint = ({ data, onChange, deleteValue, onDelete }) => {
               options={[
                 { label: "Atributo", value: "ATTRIBUTE" },
                 { label: "Pset/Qto", value: "PSET_QTO" },
-                ...(type !== "TYPE"
+                ...(on !== "TYPE"
                   ? [{ label: "Ubicación", value: "LOCATION" }]
                   : []),
               ]}
             />
             {type === "PSET_QTO" ? (
-              <TextInput label="Nombre de la propiedad" name={"pset"} />
+              <TextInput label="Nombre del Pset/Qto" name={"pset"} />
             ) : null}
 
             <FormRow>
-              <TextInput
-                span={6}
-                label="Nombre del atributo"
-                name={"attribute"}
-              />
+              {type === "LOCATION" ? (
+                <SelectInput
+                  span={6}
+                  label="Eje de coordenadas"
+                  name={"attribute"}
+                  options={[
+                    { label: "Eje X", value: "x" },
+                    { label: "Eje Y", value: "y" },
+                    { label: "Eje Z", value: "z" },
+                  ]}
+                />
+              ) : (
+                <TextInput
+                  span={6}
+                  label={
+                    type === "PSET_QTO"
+                      ? "Nombre de la propiedad"
+                      : "Nombre del atributo"
+                  }
+                  name={"attribute"}
+                />
+              )}
               <SelectInput
                 span={3}
                 label="Operación"
@@ -210,15 +229,23 @@ const FilterWindow = ({
   const { index, name, spaces, entities, constraints } = data;
   const [entity, setEntity] = useState("");
   const [saveDisabled, setSaveDisabled] = useState(true);
+  const [dbEntities, setDbEntities] = useState([]);
 
   const onFormChange = ({ name, spaces, entity }) => {
     const entityEnded = !!entity && entity.slice(-1) === ",";
+    const partialEntity = !!entity && entity.slice(0, -1);
+    const isValidEntity = !!partialEntity && dbEntities.includes(partialEntity);
+    const isAlreadyIncluded =
+      !!partialEntity && entities.includes(partialEntity);
 
     onChange({
       name,
       spaces,
-      ...(entityEnded && { entity: entity.slice(0, -1) }),
+      ...(entityEnded &&
+        isValidEntity &&
+        !isAlreadyIncluded && { entity: partialEntity }),
     });
+
     entityEnded ? setEntity("") : setEntity(entity);
   };
 
@@ -245,6 +272,23 @@ const FilterWindow = ({
     [name, spaces, entities, constraints, setSaveDisabled]
   );
 
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_API}/entities`, {
+      method: "GET",
+      headers: {
+        Authorization: sessionStorage.getItem("auth"),
+      },
+    })
+      .then((response) => response.json())
+      .then((success) => {
+        const responseEntities = success.entities
+          .map((e) => e.name)
+          .sort((a, b) => a > b);
+        setDbEntities(responseEntities);
+      })
+      .catch((error) => console.log(error));
+  }, []);
+
   return saved ? (
     <Window title={"Filtro"}>
       <Row justify="space-between" align="bottom">
@@ -270,6 +314,7 @@ const FilterWindow = ({
         <TextInput name={"spaces"} label="Recinto" />
         <TextInput
           required
+          options={dbEntities}
           multiple={entities}
           name={"entity"}
           label="Entidades IFC"
@@ -329,12 +374,13 @@ const FormulaWindow = ({ data, onChange }) => {
   );
 };
 
-export default function RulesForm({ data }) {
+export default function RulesForm() {
   const { state } = useLocation();
   const history = useHistory();
   const [currentStep, setCurrentStep] = useState(0);
   const [nextDisabled, setNextDisabled] = useState(true);
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
+  const [openErrorModal, setOpenErrorModal] = useState(false);
   const [savedFilters, setSavedFilters] = useState([]);
   const [newGroupName, setNewGroupName] = useState("");
   const [currentData, setCurrentData] = useState({
@@ -376,6 +422,7 @@ export default function RulesForm({ data }) {
     setCurrentData((prevState) => {
       const filters = [...prevState.filters];
       delete filters[index];
+      removeAppliedFilter(index);
       return { ...prevState, filters };
     });
 
@@ -507,12 +554,20 @@ export default function RulesForm({ data }) {
         constraints[index] = {
           ...constraint,
           ...(operation !== undefined && { operation }),
-          ...(on !== undefined && { on }),
+          ...(on !== undefined &&
+            (constraint.type === "LOCATION"
+              ? { on, type: "ATTRIBUTE", attribute: null }
+              : { on })),
           ...(attribute !== undefined && { attribute }),
           ...(pset !== undefined && { pset }),
-          ...(type !== undefined && { type }),
+          ...(type !== undefined &&
+            (constraint.type === "LOCATION"
+              ? { type, attribute: null }
+              : { type })),
           ...{ values: newValues },
         };
+
+        console.log(constraints[index]);
 
         filters[fIndex] = {
           ...filter,
@@ -566,6 +621,10 @@ export default function RulesForm({ data }) {
           },
           body: JSON.stringify({ name: newGroupName }),
         })
+          .then((res) => {
+            if (res.status === 200) return res;
+            else throw new Error();
+          })
           .then((res) => res.json())
           .then((res) => res.group)
           .then((groupId) =>
@@ -590,7 +649,7 @@ export default function RulesForm({ data }) {
               3000
             );
           })
-          .catch((err) => console.log(err))
+          .catch((err) => setOpenErrorModal(true))
       : fetch(url, {
           method: !!state ? "PUT" : "POST",
           headers: {
@@ -599,6 +658,10 @@ export default function RulesForm({ data }) {
           },
           body: JSON.stringify(dataCopy),
         })
+          .then((res) => {
+            if (res.status === 200) return res;
+            else throw new Error();
+          })
           .then((res) => res.json())
           .then((res) => {
             setOpenSuccessModal(true);
@@ -660,7 +723,7 @@ export default function RulesForm({ data }) {
               </Col>
             </Row>
 
-            <h1>Nueva regla</h1>
+            <h1>{!!state ? "Editar" : "Nueva"} regla</h1>
           </Col>
 
           <Steps
@@ -744,7 +807,16 @@ export default function RulesForm({ data }) {
 
       <SuccessModal
         open={openSuccessModal}
-        title={"Has creado una regla con éxito"}
+        title={`Se ha ${!!state ? "actualizado" : "creado"} la regla con éxito`}
+      />
+
+      <ErrorModal
+        open={openErrorModal}
+        title={"Se ha producido un error"}
+        onClose={() => {
+          setOpenErrorModal(false);
+          setNextDisabled(false);
+        }}
       />
     </>
   );

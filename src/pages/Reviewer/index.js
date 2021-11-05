@@ -3,8 +3,10 @@ import Card from "common/display/Card";
 import FilledButton from "common/Form/Button";
 import Layout from "common/Layout";
 import React, { useEffect, useState } from "react";
+import { useHistory } from "react-router";
 
 export default function Reviewer({ ...props }) {
+  const history = useHistory();
   const [nFiles, setNFiles] = useState(0);
   const [nTenders, setNTenders] = useState(0);
 
@@ -57,15 +59,17 @@ export default function Reviewer({ ...props }) {
       <Row justify="space-between" align="bottom" style={{ height: "50%" }}>
         <Col lg={10}>
           <Card
-            title={nTenders + " Llamado(s) realizado(s)"}
-            actionTitle={""}
+            title={nTenders + " Llamado(s) disponible(s)"}
+            actionTitle={"Ver detalles"}
+            action={() => history.push("/reviewer/tenders")}
           />
         </Col>
         <Col lg={10}>
           <Card
             green
             title={nFiles + " Archivo(s) subido(s)"}
-            actionTitle={""}
+            actionTitle={"Ver detalles"}
+            action={() => history.push("/reviewer/validate")}
           />
         </Col>
       </Row>

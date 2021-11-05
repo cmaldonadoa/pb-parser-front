@@ -4,10 +4,11 @@ import {
   DownOutlined,
   MinusCircleFilled,
 } from "@ant-design/icons";
-import { Col, Divider, Row } from "antd";
+import { Col, Divider, Row, Tree } from "antd";
 import List from "common/display/List";
 import Table from "common/display/Table";
 import Window from "common/display/Window";
+import { ErrorModal } from "common/display/Modal";
 import Form from "common/Form";
 import { DeleteAction } from "common/Form/ActionButton";
 import FilledButton from "common/Form/Button";
@@ -20,28 +21,30 @@ import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router";
 
-const colorSwitch = (s) => {
-  if ("boolean" === typeof s && s) {
-    return "#26A79A";
-  }
-  if ("boolean" === typeof s && !s) {
+const colorSwitch = (b, v) => {
+  if (!b) {
     return "#D9534F";
+  }
+  if (v.length === 0) {
+    return "#26A79A";
   }
   return "var(--color-1)";
 };
 
-const iconSwitch = (s) => {
-  if ("boolean" === typeof s && s) {
+const iconSwitch = (b, v) => {
+  if (!b) {
     return (
-      <CheckCircleFilled style={{ fontSize: 16, color: colorSwitch(s) }} />
+      <CloseCircleFilled style={{ fontSize: 16, color: colorSwitch(b, v) }} />
     );
   }
-  if ("boolean" === typeof s && !s) {
+  if (v.length === 0) {
     return (
-      <CloseCircleFilled style={{ fontSize: 16, color: colorSwitch(s) }} />
+      <CheckCircleFilled style={{ fontSize: 16, color: colorSwitch(b, v) }} />
     );
   }
-  return <MinusCircleFilled style={{ fontSize: 18, color: colorSwitch(s) }} />;
+  return (
+    <MinusCircleFilled style={{ fontSize: 18, color: colorSwitch(b, v) }} />
+  );
 };
 
 const UploadWindow = ({ onClick }) => {
@@ -164,32 +167,66 @@ const ValidateWindow = ({ data, onChange }) => {
   );
 };
 
-const ResultWindow = ({ groupId, data }) => {
-  const [groupName, setGroupName] = useState("");
+const ResultWindow = ({ groupName, data }) => {
   let [passing, error, pending] = [0, 0, 0];
 
   Object.keys(data).forEach((k) => {
     const ruleResult = data[k];
-    if (ruleResult.result === true) passing += 1;
-    else if (ruleResult.result === false) error += 1;
+    if (!ruleResult.bit) error += 1;
+    else if (ruleResult.values.length === 0) passing += 1;
     else pending += 1;
   });
 
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_API}/groups`, {
-      method: "GET",
-      headers: {
-        Authorization: sessionStorage.getItem("auth"),
-      },
-    })
-      .then((response) => response.json())
-      .then((success) => {
-        setGroupName(
-          success.groups.find((e) => e.group_id === parseInt(groupId)).name
-        );
-      })
-      .catch((error) => console.log(error));
-  }, [setGroupName, groupId]);
+  const ResultsList = ({ values, details }) => {
+    const treeData = details.map((e, i) => ({
+      title: (
+        <>
+          <div>{`Recinto: ${
+            e.spaces.length > 0
+              ? e.spaces[0][0] + e.spaces[0].slice(1).toLowerCase()
+              : "Todo el modelo"
+          }`}</div>
+          {e.meta.length === 0 && (
+            <em style={{ opacity: 0.5, paddingLeft: 24 }}>
+              No hay información para mostrar
+            </em>
+          )}
+        </>
+      ),
+      key: `0-${i}`,
+      icon: null,
+      children: e.meta.map((m, j) => ({
+        title: `${m.entity} (ID: ${m.id})`,
+        key: `0-${i}-${j}`,
+        icon: null,
+        children: Object.keys(m.values).map((v, k) => ({
+          title: `${v} = ${m.values[v]}`,
+          key: `0-${i}-${j}-${k}`,
+          icon: null,
+        })),
+      })),
+    }));
+
+    return (
+      <>
+        {Array.isArray(values) && (
+          <ul style={{ marginTop: 12 }}>
+            {values.map((e, i) => (
+              <li key={i}>{e}</li>
+            ))}
+          </ul>
+        )}
+
+        <Tree
+          selectable={false}
+          showLine={{ showLeafIcon: false }}
+          showIcon={false}
+          treeData={treeData}
+          switcherIcon={<DownOutlined />}
+        />
+      </>
+    );
+  };
 
   return (
     <Window title={groupName}>
@@ -275,11 +312,16 @@ const ResultWindow = ({ groupId, data }) => {
         <Col lg={24}>
           <List
             collapsable
-            data={Object.keys(data).map((e) => ({
-              name: data[e].name,
-              endIcon: iconSwitch(data[e].result),
-              color: colorSwitch(data[e].result),
-              content: <em>{data[e].description}</em>,
+            data={data.map((e) => ({
+              name: e.name,
+              endIcon: iconSwitch(e.bit, e.values),
+              color: colorSwitch(e.bit, e.values),
+              content: (
+                <>
+                  <em>{e.description}</em>
+                  <ResultsList values={e.values} details={e.details} />
+                </>
+              ),
             }))}
           />
         </Col>
@@ -293,6 +335,7 @@ export default function ModelValidator({ ...props }) {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [nextDisabled, setNextDisabled] = useState(false);
+  const [openErrorModal, setOpenErrorModal] = useState(false);
 
   const [files, setFiles] = useState([]);
 
@@ -331,11 +374,16 @@ export default function ModelValidator({ ...props }) {
         Authorization: sessionStorage.getItem("auth"),
       },
     })
+      .then((res) => {
+        if (res.status === 200) return res;
+        else throw new Error();
+      })
       .then((res) => res.json())
       .then((res) => {
         setFileId(res.id);
         callback();
-      });
+      })
+      .catch((err) => setOpenErrorModal(true));
   };
 
   const onClickParse = () => {
@@ -351,12 +399,16 @@ export default function ModelValidator({ ...props }) {
         Authorization: sessionStorage.getItem("auth"),
       },
     })
+      .then((res) => {
+        if (res.status === 200) return res;
+        else throw new Error();
+      })
       .then((response) => {
         setParsing(false);
         return response.json();
       })
       .then((success) => setCurrentStep(2))
-      .catch((error) => console.log(error));
+      .catch((err) => setOpenErrorModal(true));
   };
 
   const onClickValidate = () => {
@@ -373,15 +425,31 @@ export default function ModelValidator({ ...props }) {
         Authorization: sessionStorage.getItem("auth"),
       },
     })
+      .then((res) => {
+        if (res.status === 200) return res;
+        else throw new Error();
+      })
       .then((response) => {
         setValidating(false);
         return response.json();
       })
+      .then((success) =>
+        fetch(`${process.env.REACT_APP_API}/results/${fileId}`, {
+          method: "GET",
+          headers: {
+            Authorization: sessionStorage.getItem("auth"),
+          },
+        })
+      )
+      .then((res) => {
+        if (res.status === 200) return res.json();
+        else throw new Error();
+      })
       .then((success) => {
         setCurrentStep(3);
-        setResults(success.data);
+        setResults(success.results);
       })
-      .catch((error) => console.log(error));
+      .catch((err) => setOpenErrorModal(true));
   };
 
   const deleteFile = (id) =>
@@ -469,7 +537,7 @@ export default function ModelValidator({ ...props }) {
           />
         ) : (
           Object.keys(results).map((k) => (
-            <ResultWindow data={results[k]} groupId={k} />
+            <ResultWindow data={results[k]} groupName={k} />
           ))
         )}
       </div>
@@ -512,6 +580,17 @@ export default function ModelValidator({ ...props }) {
           </FilledButton>
         </Col>
       </Row>
+
+      <ErrorModal
+        open={openErrorModal}
+        title={"Se ha producido un error"}
+        onClose={() => {
+          setOpenErrorModal(false);
+          setNextDisabled(false);
+          setParsing(false);
+          setValidating(false);
+        }}
+      />
     </Layout>
   );
 }

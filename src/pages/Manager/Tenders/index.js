@@ -9,7 +9,7 @@ import { useLocation } from "react-router";
 
 const Icon = () => <TiPlus style={{ marginRight: 4 }} />;
 
-export default function Rules({ ...props }) {
+export default function Tenders({ ...props }) {
   const { state } = useLocation();
   const [tenders, setTenders] = useState([]);
 
