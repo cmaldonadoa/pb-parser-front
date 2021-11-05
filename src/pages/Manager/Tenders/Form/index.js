@@ -295,7 +295,7 @@ export default function TendersForm() {
   const { state } = useLocation();
   const history = useHistory();
   const [loaded, setLoaded] = useState(false);
-  const [currentStep, setCurrentStep] = useState(-1);
+  const [currentStep, setCurrentStep] = useState(!!state ? 3 : -1);
   const [nextDisabled, setNextDisabled] = useState(true);
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const [openErrorModal, setOpenErrorModal] = useState(false);
