@@ -1,4 +1,5 @@
 import { Button } from "antd";
+import { useHistory } from "react-router";
 import React from "react";
 
 export default function FilledButton({
@@ -13,6 +14,8 @@ export default function FilledButton({
   name,
   loading,
 }) {
+  const history = useHistory();
+
   return (
     <>
       <label
@@ -38,8 +41,7 @@ export default function FilledButton({
           borderRadius: 5,
           marginTop: !!label && 6,
         }}
-        onClick={onClick}
-        href={to}
+        onClick={to ? () => history.push("/reviewer/validate") : onClick}
       >
         {children}
       </Button>
