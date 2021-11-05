@@ -534,6 +534,8 @@ export default function ModelValidator({ ...props }) {
         onClose={() => {
           setOpenErrorModal(false);
           setNextDisabled(false);
+          setParsing(false);
+          setValidating(false);
         }}
       />
     </Layout>
