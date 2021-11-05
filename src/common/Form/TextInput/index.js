@@ -97,7 +97,25 @@ export default function TextInput({
           value={values[name]}
           style={{ borderRadius: 5, marginTop: 6, width: "100%" }}
           options={options.map((e) => ({
-            label: !!multiple && multiple.includes(e) ? <b>{e}</b> : e,
+            label:
+              !!multiple && multiple.includes(e) ? (
+                <>
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      width: "100%",
+                      height: "100%",
+                      backgroundColor: "var(--color-1)",
+                      opacity: 0.1,
+                    }}
+                  ></div>
+                  <b style={{ opacity: 10 }}>{e}</b>
+                </>
+              ) : (
+                e
+              ),
             value: e,
           }))}
           filterOption={(inputValue, option) =>
