@@ -81,7 +81,7 @@ const CollapseItem = ({ number, name, color, endIcon, content }) => {
         key="1"
         className="site-collapse-custom-panel"
       >
-        <p>{content}</p>
+        <div>{content}</div>
       </Panel>
     </Collapse>
   );

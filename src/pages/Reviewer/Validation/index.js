@@ -192,6 +192,15 @@ const ResultWindow = ({ groupId, data }) => {
       .catch((error) => console.log(error));
   }, [setGroupName, groupId]);
 
+  const ResultsList = ({ data }) =>
+    Array.isArray(data) && (
+      <ul style={{ marginBottom: 0, marginTop: 12 }}>
+        {data.map((e) => (
+          <li>{e}</li>
+        ))}
+      </ul>
+    );
+
   return (
     <Window title={groupName}>
       <Row gutter={24} justify="space=between">
@@ -280,7 +289,12 @@ const ResultWindow = ({ groupId, data }) => {
               name: data[e].name,
               endIcon: iconSwitch(data[e].result),
               color: colorSwitch(data[e].result),
-              content: <em>{data[e].description}</em>,
+              content: (
+                <>
+                  <em>{data[e].description}</em>
+                  <ResultsList data={data[e].result} />
+                </>
+              ),
             }))}
           />
         </Col>
