@@ -41,7 +41,7 @@ export default function FilledButton({
           borderRadius: 5,
           marginTop: !!label && 6,
         }}
-        onClick={to ? () => history.push("/reviewer/validate") : onClick}
+        onClick={to ? () => history.push(to) : onClick}
       >
         {children}
       </Button>
