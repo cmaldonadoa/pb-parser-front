@@ -192,7 +192,7 @@ const ResultWindow = ({ groupName, data }) => {
   const ResultsList = ({ values, details }) => {
     const treeData = details.map((e, i) => ({
       title: (
-        <>
+        <React.Fragment key={i}>
           <div>{`Recinto: ${
             e.spaces.length > 0
               ? e.spaces[0][0] + e.spaces[0].slice(1).toLowerCase()
@@ -203,7 +203,7 @@ const ResultWindow = ({ groupName, data }) => {
               No hay información para mostrar
             </em>
           )}
-        </>
+        </React.Fragment>
       ),
       key: `0-${i}`,
       icon: null,
@@ -553,7 +553,7 @@ export default function ModelValidator({ ...props }) {
           />
         ) : (
           Object.keys(results).map((k) => (
-            <ResultWindow data={results[k]} groupName={k} />
+            <ResultWindow key={k} data={results[k]} groupName={k} />
           ))
         )}
       </div>
