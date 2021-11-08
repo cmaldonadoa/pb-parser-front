@@ -52,22 +52,27 @@ const UploadWindow = ({ onClick }) => {
   const [filename, setFilename] = useState("");
   const [fileType, setFileType] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [validate, setValidate] = useState([]);
+
+  const onChange = ({ fileType, validate }) => {
+    fileType !== undefined && setFileType(fileType);
+    validate !== undefined && setValidate(validate);
+  };
 
   return (
     <Window title={"Subir archivo"}>
-      <Form
-        values={{ fileType }}
-        onChange={({ fileType }) => setFileType(fileType)}
-      >
-        <RadioInput
-          label="Tipo de modelo"
-          name={"fileType"}
-          options={[
-            { label: "Arquitectura", value: "ARQUITECTURA" },
-            { label: "Sitio", value: "SITIO" },
-            { label: "Volumétrico", value: "VOLUMETRICO" },
-          ]}
-        />
+      <Form values={{ fileType, validate }} onChange={onChange}>
+        <FormRow align="bottom">
+          <RadioInput
+            label="Tipo de modelo"
+            name={"fileType"}
+            options={[
+              { label: "Arquitectura", value: "ARQUITECTURA" },
+              { label: "Sitio", value: "SITIO" },
+              { label: "Volumétrico", value: "VOLUMETRICO" },
+            ]}
+          />
+        </FormRow>
         <FormRow align="bottom">
           <FilledButton
             loading={loading}
@@ -81,6 +86,13 @@ const UploadWindow = ({ onClick }) => {
           </FilledButton>
           <p style={{ marginBottom: 8 }}>{filename}</p>
         </FormRow>
+        <FormRow align="bottom" style={{ marginTop: 12 }}>
+          <CheckboxInput
+            name="validate"
+            label=""
+            options={[{ label: "Validar nombre del modelo", value: true }]}
+          />
+        </FormRow>
       </Form>
       <input
         type="file"
@@ -89,7 +101,7 @@ const UploadWindow = ({ onClick }) => {
         accept=".ifc, .ifczip"
         onChange={(e) => {
           const fileUploaded = e.target.files[0];
-          onClick(fileUploaded, fileType, () => {
+          onClick(fileUploaded, fileType, validate.length > 0, () => {
             setLoading(false);
             setFilename("");
             setFileType(null);
@@ -362,10 +374,11 @@ export default function ModelValidator({ ...props }) {
       .catch((error) => console.log(error));
   }, [fileId]);
 
-  const uploadFile = (file, fileType, callback) => {
+  const uploadFile = (file, fileType, validate, callback) => {
     const body = new FormData();
     body.append("file", file);
     body.append("type", fileType);
+    body.append("validate", validate);
 
     fetch(`${process.env.REACT_APP_API}/upload`, {
       method: "POST",
@@ -376,7 +389,10 @@ export default function ModelValidator({ ...props }) {
     })
       .then((res) => {
         if (res.status === 200) return res;
-        else throw new Error();
+        else {
+          callback();
+          throw new Error();
+        }
       })
       .then((res) => res.json())
       .then((res) => {
