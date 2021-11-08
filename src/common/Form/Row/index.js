@@ -7,9 +7,10 @@ export default function FormRow({
   onChange,
   justify,
   align,
+  style,
 }) {
   return (
-    <Row gutter={24} wrap={false} justify={justify} align={align}>
+    <Row gutter={24} wrap={false} justify={justify} align={align} style={style}>
       {React.Children.map(
         children,
         (e, i) =>
