@@ -402,6 +402,32 @@ export default function ModelValidator({ ...props }) {
       .catch((err) => setOpenErrorModal(true));
   };
 
+  const downloadPdf = () => {
+    fetch(`${process.env.REACT_APP_API}/results/${fileId}`, {
+      method: "POST",
+      headers: {
+        Authorization: sessionStorage.getItem("auth"),
+      },
+    })
+      .then((res) => {
+        if (res.status === 200) return res;
+        else {
+          throw new Error();
+        }
+      })
+      .then((res) => res.blob())
+      .then((blob) => {
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = files.find((e) => e.file_id === fileId).filename + ".pdf";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      })
+      .catch((err) => setOpenErrorModal(true));
+  };
+
   const onClickParse = () => {
     setParsing(true);
     const body = new FormData();
@@ -576,24 +602,33 @@ export default function ModelValidator({ ...props }) {
           </FilledButton>
         </Col>
         <Col>
-          <FilledButton
-            disabled={nextDisabled}
-            loading={parsing || validating}
-            green
-            onClick={() => {
-              setNextDisabled(true);
-              currentStep === 0 && setCurrentStep(1);
-              currentStep === 1 && onClickParse();
-              currentStep === 2 && onClickValidate();
-              currentStep === 3 && history.push("/");
-            }}
-          >
-            {currentStep < 2
-              ? "Siguiente"
-              : currentStep < 3
-              ? "Validar"
-              : "Finalizar"}
-          </FilledButton>
+          <Row gutter={16}>
+            <Col>
+              {currentStep === 3 && (
+                <FilledButton onClick={downloadPdf}>Descargar</FilledButton>
+              )}
+            </Col>
+            <Col>
+              <FilledButton
+                disabled={nextDisabled}
+                loading={parsing || validating}
+                green
+                onClick={() => {
+                  setNextDisabled(true);
+                  currentStep === 0 && setCurrentStep(1);
+                  currentStep === 1 && onClickParse();
+                  currentStep === 2 && onClickValidate();
+                  currentStep === 3 && history.push("/");
+                }}
+              >
+                {currentStep < 2
+                  ? "Siguiente"
+                  : currentStep < 3
+                  ? "Validar"
+                  : "Finalizar"}
+              </FilledButton>
+            </Col>
+          </Row>
         </Col>
       </Row>
 
