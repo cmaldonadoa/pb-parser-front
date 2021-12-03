@@ -166,9 +166,10 @@ const Constraint = ({ data, onChange, deleteValue, onDelete }) => {
                   label="Eje de coordenadas"
                   name={"attribute"}
                   options={[
-                    { label: "Eje X", value: "x" },
-                    { label: "Eje Y", value: "y" },
-                    { label: "Eje Z", value: "z" },
+                    { label: "Coordenada X", value: "x" },
+                    { label: "Coordenada Y", value: "y" },
+                    { label: "Coordenada Z", value: "z" },
+                    { label: "Altura global", value: "h" },
                   ]}
                 />
               ) : (
