@@ -52,16 +52,14 @@ const UploadWindow = ({ onClick }) => {
   const [filename, setFilename] = useState("");
   const [fileType, setFileType] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [validate, setValidate] = useState([]);
 
-  const onChange = ({ fileType, validate }) => {
+  const onChange = ({ fileType }) => {
     fileType !== undefined && setFileType(fileType);
-    validate !== undefined && setValidate(validate);
   };
 
   return (
     <Window title={"Subir archivo"}>
-      <Form values={{ fileType, validate }} onChange={onChange}>
+      <Form values={{ fileType }} onChange={onChange}>
         <FormRow align="bottom">
           <RadioInput
             label="Tipo de modelo"
@@ -86,13 +84,6 @@ const UploadWindow = ({ onClick }) => {
           </FilledButton>
           <p style={{ marginBottom: 8 }}>{filename}</p>
         </FormRow>
-        <FormRow align="bottom" style={{ marginTop: 12 }}>
-          <CheckboxInput
-            name="validate"
-            label=""
-            options={[{ label: "Validar nombre del modelo", value: true }]}
-          />
-        </FormRow>
       </Form>
       <input
         type="file"
@@ -101,7 +92,7 @@ const UploadWindow = ({ onClick }) => {
         accept=".ifc, .ifczip"
         onChange={(e) => {
           const fileUploaded = e.target.files[0];
-          onClick(fileUploaded, fileType, validate.length > 0, () => {
+          onClick(fileUploaded, fileType, () => {
             setLoading(false);
             setFilename("");
             setFileType(null);
@@ -190,34 +181,36 @@ const ResultWindow = ({ groupName, data }) => {
   });
 
   const ResultsList = ({ values, details }) => {
-    const treeData = details.map((e, i) => ({
-      title: (
-        <React.Fragment key={i}>
-          <div>{`Recinto: ${
-            e.spaces.length > 0
-              ? e.spaces[0][0] + e.spaces[0].slice(1).toLowerCase()
-              : "Todo el modelo"
-          }`}</div>
-          {e.meta.length === 0 && (
-            <em style={{ opacity: 0.5, paddingLeft: 24 }}>
-              No hay información para mostrar
-            </em>
-          )}
-        </React.Fragment>
-      ),
-      key: `0-${i}`,
-      icon: null,
-      children: e.meta.map((m, j) => ({
-        title: `${m.entity} (ID: ${m.id})`,
-        key: `0-${i}-${j}`,
+    const treeData =
+      details !== false &&
+      details.map((e, i) => ({
+        title: (
+          <React.Fragment key={i}>
+            <div>{`Recinto: ${
+              e.spaces.length > 0
+                ? e.spaces[0][0] + e.spaces[0].slice(1).toLowerCase()
+                : "Todo el modelo"
+            }`}</div>
+            {e.meta.length === 0 && (
+              <em style={{ opacity: 0.5, paddingLeft: 24 }}>
+                No hay información para mostrar
+              </em>
+            )}
+          </React.Fragment>
+        ),
+        key: `0-${i}`,
         icon: null,
-        children: Object.keys(m.values).map((v, k) => ({
-          title: `${v} = ${m.values[v]}`,
-          key: `0-${i}-${j}-${k}`,
+        children: e.meta.map((m, j) => ({
+          title: `${m.entity} (ID: ${m.id})`,
+          key: `0-${i}-${j}`,
           icon: null,
+          children: Object.keys(m.values).map((v, k) => ({
+            title: `${v} = ${m.values[v]}`,
+            key: `0-${i}-${j}-${k}`,
+            icon: null,
+          })),
         })),
-      })),
-    }));
+      }));
 
     return (
       <>
@@ -229,13 +222,15 @@ const ResultWindow = ({ groupName, data }) => {
           </ul>
         )}
 
-        <Tree
-          selectable={false}
-          showLine={{ showLeafIcon: false }}
-          showIcon={false}
-          treeData={treeData}
-          switcherIcon={<DownOutlined />}
-        />
+        {!!treeData && (
+          <Tree
+            selectable={false}
+            showLine={{ showLeafIcon: false }}
+            showIcon={false}
+            treeData={treeData}
+            switcherIcon={<DownOutlined />}
+          />
+        )}
       </>
     );
   };
@@ -374,11 +369,10 @@ export default function ModelValidator({ ...props }) {
       .catch((error) => console.log(error));
   }, [fileId]);
 
-  const uploadFile = (file, fileType, validate, callback) => {
+  const uploadFile = (file, fileType, callback) => {
     const body = new FormData();
     body.append("file", file);
     body.append("type", fileType);
-    body.append("validate", validate);
 
     fetch(`${process.env.REACT_APP_API}/upload`, {
       method: "POST",
