@@ -23,7 +23,7 @@ export default function Header({ leftButton, rightButton }) {
 
   const menu = (
     <Menu style={{ borderRadius: 5 }} onClick={logOut}>
-      <Menu.Item>Cerrar sesión</Menu.Item>
+      <Menu.Item key="logout">Cerrar sesión</Menu.Item>
     </Menu>
   );
 
