@@ -85,6 +85,7 @@ export default function Login({ ...props }) {
               username !== undefined && setUsername(username);
               password !== undefined && setPassword(password);
             }}
+            onSubmit={authenticate}
           >
             <TextInput
               name="username"
@@ -112,15 +113,15 @@ export default function Login({ ...props }) {
                 <EyeIcon open={!passwordShown} onClick={togglePasswordShown} />
               }
             />
-          </Form>
 
-          <Row justify="center" style={{ marginTop: 48 }}>
-            <Col lg="auto">
-              <FilledButton green onClick={authenticate}>
-                Ingresar
-              </FilledButton>
-            </Col>
-          </Row>
+            <Row justify="center" style={{ marginTop: 48 }}>
+              <Col lg="auto">
+                <FilledButton green onClick={authenticate}>
+                  Ingresar
+                </FilledButton>
+              </Col>
+            </Row>
+          </Form>
         </Col>
       </Row>
     </Layout>

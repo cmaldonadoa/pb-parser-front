@@ -1,8 +1,8 @@
 import React from "react";
 
-export default function Form({ children, values, onChange }) {
+export default function Form({ children, values, onChange, onSubmit }) {
   return (
-    <div>
+    <div onKeyDown={(e) => e.key === "Enter" && onSubmit()}>
       {React.Children.map(
         children,
         (e) =>

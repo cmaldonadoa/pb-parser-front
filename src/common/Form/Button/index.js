@@ -18,13 +18,15 @@ export default function FilledButton({
 
   return (
     <>
-      <label
-        className="text-sm"
-        style={{ color: "var(--color-2-text)" }}
-        htmlFor={name}
-      >
-        {label}
-      </label>
+      {!!label && (
+        <label
+          className="text-sm"
+          style={{ color: "var(--color-2-text)" }}
+          htmlFor={name}
+        >
+          {label}
+        </label>
+      )}
       <Button
         ref={(node) =>
           node && node.style.setProperty("padding-top", "3.3px", "important")
