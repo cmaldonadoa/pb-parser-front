@@ -295,7 +295,7 @@ const ResultWindow = ({ groupName, data }) => {
                     className="text-md text-bold"
                     style={{ color: "var(--color-1-text)" }}
                   >
-                    pendientes de revision
+                    a verificar por revisor
                   </span>
                 </Col>
               </Row>
