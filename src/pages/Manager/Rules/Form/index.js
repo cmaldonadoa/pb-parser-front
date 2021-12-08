@@ -226,18 +226,29 @@ const FilterWindow = ({
   undoSaveFilter,
   deleteValue,
   deleteEntity,
+  deleteEntityExcluded,
 }) => {
-  const { index, name, spaces, entities, constraints } = data;
+  const { index, name, spaces, entities, excluded, constraints } = data;
   const [entity, setEntity] = useState("");
+  const [entityExcluded, setExcluded] = useState("");
   const [saveDisabled, setSaveDisabled] = useState(true);
   const [dbEntities, setDbEntities] = useState([]);
 
-  const onFormChange = ({ name, spaces, entity }) => {
+  const onFormChange = ({ name, spaces, entity, entityExcluded }) => {
     const entityEnded = !!entity && entity.slice(-1) === ",";
     const partialEntity = !!entity && entity.slice(0, -1);
     const isValidEntity = !!partialEntity && dbEntities.includes(partialEntity);
     const isAlreadyIncluded =
       !!partialEntity && entities.includes(partialEntity);
+
+    const entityExcludedEnded =
+      !!entityExcluded && entityExcluded.slice(-1) === ",";
+    const partialEntityExcluded =
+      !!entityExcluded && entityExcluded.slice(0, -1);
+    const isValidEntityExcluded =
+      !!partialEntityExcluded && dbEntities.includes(partialEntityExcluded);
+    const isAlreadyExcluded =
+      !!partialEntityExcluded && excluded.includes(partialEntityExcluded);
 
     onChange({
       name,
@@ -245,9 +256,13 @@ const FilterWindow = ({
       ...(entityEnded &&
         isValidEntity &&
         !isAlreadyIncluded && { entity: partialEntity }),
+      ...(entityExcludedEnded &&
+        isValidEntityExcluded &&
+        !isAlreadyExcluded && { entityExcluded: partialEntityExcluded }),
     });
 
     entityEnded ? setEntity("") : setEntity(entity);
+    entityExcludedEnded ? setExcluded("") : setExcluded(entityExcluded);
   };
 
   useEffect(
@@ -310,7 +325,10 @@ const FilterWindow = ({
     </Window>
   ) : (
     <Window title={"Filtro"}>
-      <Form values={{ name, spaces, entity }} onChange={onFormChange}>
+      <Form
+        values={{ name, spaces, entity, entityExcluded }}
+        onChange={onFormChange}
+      >
         <TextInput required name={"name"} label="Nombre del filtro" />
         <TextInput name={"spaces"} label="Recinto" />
         <TextInput
@@ -320,6 +338,13 @@ const FilterWindow = ({
           name={"entity"}
           label="Entidades IFC"
           onDelete={(e) => deleteEntity({ entity: e })}
+        />
+        <TextInput
+          options={dbEntities}
+          multiple={excluded}
+          name={"entityExcluded"}
+          label="Entidades IFC excluidas"
+          onDelete={(e) => deleteEntityExcluded({ entity: e })}
         />
       </Form>
       {constraints.map(
@@ -404,6 +429,7 @@ export default function RulesForm() {
           index: prevState.filters.length,
           spaces: "",
           entities: [],
+          excluded: [],
           constraints: [
             {
               index: 0,
@@ -502,6 +528,21 @@ export default function RulesForm() {
         return { ...prevState, filters };
       });
 
+  const deleteEntityExcluded =
+    (fIndex) =>
+    ({ entity }) =>
+      setCurrentData((prevState) => {
+        const filters = [...prevState.filters];
+        const filter = filters[fIndex];
+        const newEntities = [...filter.excluded.filter((e) => e !== entity)];
+
+        filters[fIndex] = {
+          ...filter,
+          ...{ excluded: newEntities },
+        };
+        return { ...prevState, filters };
+      });
+
   const onChangeBasicInfo = ({
     name,
     group,
@@ -523,19 +564,23 @@ export default function RulesForm() {
 
   const onChangeFilter =
     (fIndex) =>
-    ({ name, spaces, entity }) =>
+    ({ name, spaces, entity, entityExcluded }) =>
       setCurrentData((prevState) => {
         const filters = [...prevState.filters];
         const filter = filters[fIndex];
         const newEntities = !entity
           ? filter.entities
           : filter.entities.concat(entity);
+        const newEntitiesExcluded = !entityExcluded
+          ? filter.excluded
+          : filter.excluded.concat(entityExcluded);
 
         filters[fIndex] = {
           ...filter,
           ...(name !== undefined && { name }),
           ...(spaces !== undefined && { spaces }),
           ...{ entities: newEntities },
+          ...{ excluded: newEntitiesExcluded },
         };
         return { ...prevState, filters };
       });
@@ -758,6 +803,7 @@ export default function RulesForm() {
                         undoSaveFilter={() => removeAppliedFilter(e.index)}
                         deleteValue={deleteValue(e.index)}
                         deleteEntity={deleteEntity(e.index)}
+                        deleteEntityExcluded={deleteEntityExcluded(e.index)}
                       />
                     )
                 )}
