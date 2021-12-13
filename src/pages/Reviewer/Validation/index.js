@@ -26,7 +26,7 @@ const colorSwitch = (b, v) => {
     return "#D9534F";
   }
   if (v.length === 0) {
-    return "#26A79A";
+    return "#4fd95f";
   }
   return "var(--color-1)";
 };
