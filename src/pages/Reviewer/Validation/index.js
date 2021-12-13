@@ -22,24 +22,24 @@ import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router";
 
 const colorSwitch = (b, v) => {
-  if (!b) {
-    return "#D9534F";
+  if (!!b) {
+    return "#4fd95f";
   }
   if (v.length === 0) {
-    return "#4fd95f";
+    return "#D9534F";
   }
   return "var(--color-1)";
 };
 
 const iconSwitch = (b, v) => {
-  if (!b) {
+  if (!!b) {
     return (
-      <CloseCircleFilled style={{ fontSize: 16, color: colorSwitch(b, v) }} />
+      <CheckCircleFilled style={{ fontSize: 16, color: colorSwitch(b, v) }} />
     );
   }
   if (v.length === 0) {
     return (
-      <CheckCircleFilled style={{ fontSize: 16, color: colorSwitch(b, v) }} />
+      <CloseCircleFilled style={{ fontSize: 16, color: colorSwitch(b, v) }} />
     );
   }
   return (
@@ -136,7 +136,7 @@ const AnalyzeWindow = ({ data, onChange }) => {
   );
 };
 
-const ValidateWindow = ({ data, onChange }) => {
+const TenderWindow = ({ data, onChange }) => {
   const { tenderId } = data;
   const [tenders, setTenders] = useState([]);
 
@@ -181,6 +181,13 @@ const ResultWindow = ({ groupName, data }) => {
   });
 
   const ResultsList = ({ values, details }) => {
+    function toCamelCase(name) {
+      return name
+        .split("_")
+        .map((w) => w[0] + w.slice(1).toLowerCase())
+        .join(" ");
+    }
+
     const treeData =
       details !== false &&
       details.map((e, i) => ({
@@ -188,7 +195,9 @@ const ResultWindow = ({ groupName, data }) => {
           <React.Fragment key={i}>
             <div>{`Recinto: ${
               e.spaces.length > 0
-                ? e.spaces[0][0] + e.spaces[0].slice(1).toLowerCase()
+                ? e.spaces[0][0] === "#"
+                  ? toCamelCase(e.spaces[0].slice(1))
+                  : toCamelCase(e.spaces[0])
                 : "Todo el modelo"
             }`}</div>
             {e.meta.length === 0 && (
@@ -214,13 +223,20 @@ const ResultWindow = ({ groupName, data }) => {
 
     return (
       <>
-        {Array.isArray(values) && (
-          <ul style={{ marginTop: 12 }}>
-            {values.map((e, i) => (
-              <li key={i}>{e}</li>
-            ))}
-          </ul>
-        )}
+        {Array.isArray(values) &&
+          values.length > 0 &&
+          (values.length > 1 ? (
+            <>
+              <p>Valores encontrados:</p>
+              <ul style={{ marginTop: 12 }}>
+                {values.map((e, i) => (
+                  <li key={i}>{e}</li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p>Valor encontrado: {values[0]}</p>
+          ))}
 
         {!!treeData && (
           <Tree
@@ -427,6 +443,7 @@ export default function ModelValidator({ ...props }) {
     const body = new FormData();
     body.append("file_id", fileId);
     body.append("group_ids", groupIds);
+    body.append("tender_id", tenderId);
 
     fetch(`${process.env.REACT_APP_API}/parse`, {
       method: "POST",
@@ -443,24 +460,15 @@ export default function ModelValidator({ ...props }) {
         setParsing(false);
         return response.json();
       })
-      .then((success) => setCurrentStep(2))
-      .catch((err) => setOpenErrorModal(true));
-  };
-
-  const onClickValidate = () => {
-    setValidating(true);
-    const body = new FormData();
-    body.append("file_id", fileId);
-    body.append("group_ids", groupIds);
-    body.append("tender_id", tenderId);
-
-    fetch(`${process.env.REACT_APP_API}/check`, {
-      method: "POST",
-      body: body,
-      headers: {
-        Authorization: sessionStorage.getItem("auth"),
-      },
-    })
+      .then((success) =>
+        fetch(`${process.env.REACT_APP_API}/check`, {
+          method: "POST",
+          body: body,
+          headers: {
+            Authorization: sessionStorage.getItem("auth"),
+          },
+        })
+      )
       .then((res) => {
         if (res.status === 200) return res;
         else throw new Error();
@@ -511,8 +519,8 @@ export default function ModelValidator({ ...props }) {
 
   useEffect(() => {
     if (currentStep < 1) setNextDisabled(!fileId);
-    else if (currentStep < 2) setNextDisabled(groupIds.length === 0);
-    else if (currentStep < 3) setNextDisabled(!tenderId);
+    else if (currentStep < 2) setNextDisabled(!tenderId);
+    else if (currentStep < 3) setNextDisabled(groupIds.length === 0);
     else setNextDisabled(false);
   }, [setNextDisabled, fileId, currentStep, groupIds, tenderId]);
 
@@ -562,14 +570,11 @@ export default function ModelValidator({ ...props }) {
             />
           </>
         ) : currentStep === 1 ? (
+          <TenderWindow data={{ tenderId }} onChange={(k) => setTenderId(k)} />
+        ) : currentStep === 2 ? (
           <AnalyzeWindow
             data={{ groupIds }}
             onChange={({ groupIds }) => setGroupIds(groupIds)}
-          />
-        ) : currentStep === 2 ? (
-          <ValidateWindow
-            data={{ tenderId }}
-            onChange={(k) => setTenderId(k)}
           />
         ) : (
           Object.keys(results).map((k) => (
@@ -610,8 +615,8 @@ export default function ModelValidator({ ...props }) {
                 onClick={() => {
                   setNextDisabled(true);
                   currentStep === 0 && setCurrentStep(1);
-                  currentStep === 1 && onClickParse();
-                  currentStep === 2 && onClickValidate();
+                  currentStep === 1 && setCurrentStep(2);
+                  currentStep === 2 && onClickParse();
                   currentStep === 3 && history.push("/");
                 }}
               >

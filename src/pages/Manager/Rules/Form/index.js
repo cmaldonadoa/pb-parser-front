@@ -388,13 +388,14 @@ const FilterWindow = ({
 };
 
 const FormulaWindow = ({ data, onChange }) => {
-  const { name, formula } = data;
+  const { name, formula, display } = data;
 
   return (
     <Window title={"Fórmula"}>
-      <Form values={{ name, formula }} onChange={onChange}>
+      <Form values={{ name, formula, display }} onChange={onChange}>
         <TextInput name={"name"} label="Nombre de la regla" disabled />
         <TextInput required name={"formula"} label="Fórmula" />
+        <TextInput name={"display"} label="Resultado a mostrar" />
       </Form>
     </Window>
   );
@@ -413,6 +414,7 @@ export default function RulesForm() {
     name: "",
     description: "",
     formula: "",
+    display: "",
     modelTypes: [],
     buildingTypes: [],
     group: null,
@@ -622,10 +624,11 @@ export default function RulesForm() {
         return { ...prevState, filters };
       });
 
-  const onChangeFormula = ({ formula }) =>
+  const onChangeFormula = ({ formula, display }) =>
     setCurrentData((prevState) => ({
       ...prevState,
       ...(formula !== undefined && { formula }),
+      ...(display !== undefined && { display }),
     }));
 
   useEffect(() => {
