@@ -14,6 +14,7 @@ function MiniButton({ icon, onClick, color }) {
         width: 24,
         height: 24,
         fontSize: 18,
+        textAlign: "center",
       }}
     >
       {icon}
