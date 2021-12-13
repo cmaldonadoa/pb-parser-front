@@ -49,10 +49,17 @@ export default function TextInput({
     return arg;
   };
 
+  const isDisabled =
+    disabled || (activable !== undefined && !values[activable]);
+
+  const value = values[name];
+
+  const isEmptyValue = value === "" || value === undefined || value === null;
+
   const CustomInput = (
     <Input
-      value={values[name]}
-      disabled={disabled || (activable !== undefined && !values[activable])}
+      value={isDisabled && isEmptyValue ? "No especificado" : value}
+      disabled={isDisabled}
       placeholder={placeholder}
       prefix={tags || startIcon}
       suffix={endIcon}

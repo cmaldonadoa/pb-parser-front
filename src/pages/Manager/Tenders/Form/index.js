@@ -49,6 +49,10 @@ const BasicInfoWindow = ({ data, onChange, disabled, onEdit }) => {
     soilOccupancyCoef,
     type,
     angle,
+    upperFloorsCoef,
+    totalUnits,
+    parkingLots,
+    buildingHeight,
   } = data;
 
   const [regions, setRegions] = useState([]);
@@ -103,6 +107,10 @@ const BasicInfoWindow = ({ data, onChange, disabled, onEdit }) => {
           soilOccupancyCoef,
           type,
           angle,
+          upperFloorsCoef,
+          totalUnits,
+          parkingLots,
+          buildingHeight,
         }}
       >
         <TextInput
@@ -155,6 +163,11 @@ const BasicInfoWindow = ({ data, onChange, disabled, onEdit }) => {
           name={"soilOccupancyCoef"}
           label="Coeficiente de ocupación de suelo"
         />
+        <TextInput
+          disabled={disabled}
+          name={"upperFloorsCoef"}
+          label="Coeficiente de ocupación de pisos superiores"
+        />
         <SelectInput
           disabled={disabled}
           required
@@ -175,6 +188,21 @@ const BasicInfoWindow = ({ data, onChange, disabled, onEdit }) => {
             { label: "70°", value: 70 },
             { label: "80°", value: 80 },
           ]}
+        />
+        <TextInput
+          disabled={disabled}
+          name={"buildingHeight"}
+          label="Altura de la edifciación"
+        />
+        <TextInput
+          disabled={disabled}
+          name={"totalUnits"}
+          label="Unidades totales"
+        />
+        <TextInput
+          disabled={disabled}
+          name={"parkingLots"}
+          label="Exigencias de estacionamientos"
         />
       </Form>
       {disabled && (
@@ -316,6 +344,10 @@ export default function TendersForm() {
     medios2: "",
     handicapMedios2: "",
     total: "",
+    upperFloorsCoef: "",
+    totalUnits: "",
+    parkingLots: "",
+    buildingHeight: "",
     isHandicapVulnerable: false,
     isHandicapMedios1: false,
     isHandicapMedios2: false,
@@ -331,6 +363,10 @@ export default function TendersForm() {
     soilOccupancyCoef,
     type,
     angle,
+    upperFloorsCoef,
+    totalUnits,
+    parkingLots,
+    buildingHeight,
   }) =>
     setCurrentData((prevState) => ({
       ...prevState,
@@ -343,6 +379,10 @@ export default function TendersForm() {
       ...(soilOccupancyCoef !== undefined && { soilOccupancyCoef }),
       ...(type !== undefined && { type }),
       ...(angle !== undefined && { angle }),
+      ...(upperFloorsCoef !== undefined && { upperFloorsCoef }),
+      ...(totalUnits !== undefined && { totalUnits }),
+      ...(parkingLots !== undefined && { parkingLots }),
+      ...(buildingHeight !== undefined && { buildingHeight }),
     }));
 
   const onChangeRequirements = ({
@@ -458,6 +498,10 @@ export default function TendersForm() {
             medios2: o.medios_2,
             handicapMedios2: o.handicap_medios_2,
             total: o.total,
+            upperFloorsCoef: o.upperFloorsCoef,
+            totalUnits: o.totalUnits,
+            parkingLots: o.parkingLots,
+            buildingHeight: o.buildingHeight,
             isHandicapVulnerable: o.handicap_vulnerable > 0,
             isHandicapMedios1: o.handicap_medios_1 > 0,
             isHandicapMedios2: o.handicap_medios_2 > 0,
