@@ -341,7 +341,9 @@ const ResultWindow = ({ groupName, data }) => {
               color: colorSwitch(e.bit, e.values),
               content: (
                 <>
-                  <em>{e.description}</em>
+                  <p>
+                    <i>{e.description}</i>
+                  </p>
                   <ResultsList values={e.values} details={e.details} />
                 </>
               ),
