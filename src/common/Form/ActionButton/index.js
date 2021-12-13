@@ -1,16 +1,23 @@
-import { Button } from "antd";
 import React from "react";
 import { MdClose, MdEdit } from "react-icons/md";
 
 function MiniButton({ icon, onClick, color }) {
   return (
-    <Button
-      type={"primary"}
-      icon={icon}
+    <div
       onClick={onClick}
       size="small"
-      style={{ background: color, borderColor: color }}
-    />
+      style={{
+        color: "white",
+        background: color,
+        borderColor: color,
+        cursor: "pointer",
+        width: 24,
+        height: 24,
+        fontSize: 18,
+      }}
+    >
+      {icon}
+    </div>
   );
 }
 
