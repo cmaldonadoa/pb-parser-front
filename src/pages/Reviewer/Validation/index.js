@@ -175,8 +175,8 @@ const ResultWindow = ({ groupName, data }) => {
 
   Object.keys(data).forEach((k) => {
     const ruleResult = data[k];
-    if (!ruleResult.bit) error += 1;
-    else if (ruleResult.values.length === 0) passing += 1;
+    if (!!ruleResult.bit) passing += 1;
+    else if (ruleResult.values.length === 0) error += 1;
     else pending += 1;
   });
 
