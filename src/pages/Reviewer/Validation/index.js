@@ -2,6 +2,7 @@ import {
   CheckCircleFilled,
   CloseCircleFilled,
   DownOutlined,
+  UpOutlined,
   MinusCircleFilled,
 } from "@ant-design/icons";
 import { Col, Divider, Row, Tree } from "antd";
@@ -18,7 +19,7 @@ import FormRow from "common/Form/Row";
 import Steps from "common/Form/Steps";
 import Layout from "common/Layout";
 import moment from "moment";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useHistory } from "react-router";
 
 const colorSwitch = (b, v) => {
@@ -34,12 +35,12 @@ const colorSwitch = (b, v) => {
 const iconSwitch = (b, v) => {
   if (!!b) {
     return (
-      <CheckCircleFilled style={{ fontSize: 16, color: colorSwitch(b, v) }} />
+      <CheckCircleFilled style={{ fontSize: 18, color: colorSwitch(b, v) }} />
     );
   }
   if (v.length === 0) {
     return (
-      <CloseCircleFilled style={{ fontSize: 16, color: colorSwitch(b, v) }} />
+      <CloseCircleFilled style={{ fontSize: 18, color: colorSwitch(b, v) }} />
     );
   }
   return (
@@ -171,7 +172,14 @@ const TenderWindow = ({ data, onChange }) => {
 };
 
 const ResultWindow = ({ groupName, data }) => {
+  const ref = useRef(null);
+  const [height, setHeight] = useState(0);
+  const [open, setOpen] = useState(true);
   let [passing, error, pending] = [0, 0, 0];
+
+  useEffect(() => {
+    setHeight(ref.current.clientHeight);
+  }, []);
 
   Object.keys(data).forEach((k) => {
     const ruleResult = data[k];
@@ -271,7 +279,10 @@ const ResultWindow = ({ groupName, data }) => {
                     className="text-md text-bold"
                     style={{ color: "var(--color-1-text)" }}
                   >
-                    cumplidas
+                    cumplidas{" "}
+                    <CheckCircleFilled
+                      style={{ fontSize: 18, color: "#4fd95f" }}
+                    />
                   </span>
                 </Col>
               </Row>
@@ -291,7 +302,10 @@ const ResultWindow = ({ groupName, data }) => {
                     className="text-md text-bold"
                     style={{ color: "var(--color-1-text)" }}
                   >
-                    falladas
+                    falladas{" "}
+                    <CloseCircleFilled
+                      style={{ fontSize: 18, color: "#D9534F" }}
+                    />
                   </span>
                 </Col>
               </Row>
@@ -311,7 +325,10 @@ const ResultWindow = ({ groupName, data }) => {
                     className="text-md text-bold"
                     style={{ color: "var(--color-1-text)" }}
                   >
-                    a verificar por revisor
+                    a verificar por revisor{" "}
+                    <MinusCircleFilled
+                      style={{ fontSize: 18, color: "var(--color-1)" }}
+                    />
                   </span>
                 </Col>
               </Row>
@@ -327,30 +344,40 @@ const ResultWindow = ({ groupName, data }) => {
             cursor: "pointer",
           }}
         >
-          <DownOutlined />
+          {!open && <DownOutlined onClick={() => setOpen(true)} />}
+          {open && <UpOutlined onClick={() => setOpen(false)} />}
         </Col>
       </Row>
-      <Divider />
-      <Row style={{ width: "100%" }}>
-        <Col lg={24}>
-          <List
-            collapsable
-            data={data.map((e) => ({
-              name: e.name,
-              endIcon: iconSwitch(e.bit, e.values),
-              color: colorSwitch(e.bit, e.values),
-              content: (
-                <>
-                  <p>
-                    <i>{e.description}</i>
-                  </p>
-                  <ResultsList values={e.values} details={e.details} />
-                </>
-              ),
-            }))}
-          />
-        </Col>
-      </Row>
+      <div
+        ref={ref}
+        style={{
+          transition: "max-height 0.4s ease",
+          overflow: "hidden",
+          maxHeight: height > 0 ? (open ? height : 0) : "unset",
+        }}
+      >
+        <Divider />
+        <Row style={{ width: "100%" }}>
+          <Col lg={24}>
+            <List
+              collapsable
+              data={data.map((e) => ({
+                name: e.name,
+                endIcon: iconSwitch(e.bit, e.values),
+                color: colorSwitch(e.bit, e.values),
+                content: (
+                  <>
+                    <p>
+                      <i>{e.description}</i>
+                    </p>
+                    <ResultsList values={e.values} details={e.details} />
+                  </>
+                ),
+              }))}
+            />
+          </Col>
+        </Row>
+      </div>
     </Window>
   );
 };
