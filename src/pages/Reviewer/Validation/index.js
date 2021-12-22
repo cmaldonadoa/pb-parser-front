@@ -353,7 +353,7 @@ const ResultWindow = ({ groupName, data }) => {
         style={{
           transition: "max-height 0.4s ease",
           overflow: "hidden",
-          maxHeight: height > 0 ? (open ? height : 0) : "unset",
+          maxHeight: height > 0 ? (open ? 999999 : 0) : "unset",
         }}
       >
         <Divider />
