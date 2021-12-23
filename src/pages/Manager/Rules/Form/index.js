@@ -615,8 +615,6 @@ export default function RulesForm() {
           ...{ values: newValues },
         };
 
-        console.log(constraints[index]);
-
         filters[fIndex] = {
           ...filter,
           constraints,
