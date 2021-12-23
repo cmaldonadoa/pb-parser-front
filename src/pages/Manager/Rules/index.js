@@ -98,11 +98,11 @@ export default function Rules() {
       <h1>Listado de reglas</h1>
       <Tabs
         defaultActiveKey={1}
-        activeKey={currentGroup}
+        activeKey={"" + currentGroup}
         onChange={(k) => setCurrentGroup(k)}
       >
         {groups.map((e) => (
-          <TabPane tab={e.name} key={e.group_id} className="text-md">
+          <TabPane tab={e.name} key={"" + e.group_id} className="text-md">
             <List
               data={rules.map((e) => ({
                 name: e.name,
