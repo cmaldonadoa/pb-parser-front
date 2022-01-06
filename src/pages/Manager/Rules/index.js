@@ -5,13 +5,14 @@ import FilledButton from "common/Form/Button";
 import Layout from "common/Layout";
 import React, { useEffect, useState } from "react";
 import { TiPlus } from "react-icons/ti";
-import { useLocation } from "react-router";
+import { useHistory, useLocation } from "react-router";
 
 const { TabPane } = Tabs;
 
 const Icon = () => <TiPlus style={{ marginRight: 4 }} />;
 
 export default function Rules() {
+  const history = useHistory();
   const { state } = useLocation();
   const [groups, setGroups] = useState([]);
   const [currentGroup, setCurrentGroup] = useState(0);
@@ -116,14 +117,18 @@ export default function Rules() {
                   <Row gutter={16} style={{ zIndex: 10 }}>
                     <Col>
                       <DeleteAction
-                        onClick={(event) => {
-                          deleteRule(e.rule_id);
-                          event.stopPropagation();
-                        }}
+                        onClick={(cb) => deleteRule(e.rule_id).finally(cb)}
                       />
                     </Col>
                     <Col>
-                      <EditAction />
+                      <EditAction
+                        onClick={() =>
+                          history.push(`/manager/rules/edit`, {
+                            ruleId: e.rule_id,
+                            groupId: currentGroup,
+                          })
+                        }
+                      />
                     </Col>
                   </Row>
                 ),

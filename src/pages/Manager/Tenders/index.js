@@ -5,11 +5,12 @@ import { DeleteAction, EditAction } from "common/Form/ActionButton";
 import Layout from "common/Layout";
 import React, { useEffect, useState } from "react";
 import { TiPlus } from "react-icons/ti";
-import { useLocation } from "react-router";
+import { useLocation, useHistory } from "react-router";
 
 const Icon = () => <TiPlus style={{ marginRight: 4 }} />;
 
 export default function Tenders({ ...props }) {
+  const history = useHistory();
   const { state } = useLocation();
   const [tenders, setTenders] = useState([]);
 
@@ -84,14 +85,17 @@ export default function Tenders({ ...props }) {
             <Row gutter={16} style={{ zIndex: 10 }}>
               <Col>
                 <DeleteAction
-                  onClick={(event) => {
-                    deleteTender(e.tender_id);
-                    event.stopPropagation();
-                  }}
+                  onClick={(cb) => deleteTender(e.tender_id).finally(cb)}
                 />
               </Col>
               <Col>
-                <EditAction />
+                <EditAction
+                  onClick={() =>
+                    history.push(`/manager/tenders/edit`, {
+                      tenderId: e.tender_id,
+                    })
+                  }
+                />
               </Col>
             </Row>
           ),

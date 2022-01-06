@@ -1,6 +1,6 @@
 import { Button } from "antd";
+import React, { useState } from "react";
 import { useHistory } from "react-router";
-import React from "react";
 
 export default function FilledButton({
   children,
@@ -15,6 +15,16 @@ export default function FilledButton({
   loading,
 }) {
   const history = useHistory();
+  const [selfDisabled, setSelfDisabled] = useState(false);
+
+  const handleClick = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (!selfDisabled) {
+      setSelfDisabled(true);
+      onClick(() => setSelfDisabled(false));
+    }
+  };
 
   return (
     <>
@@ -32,7 +42,7 @@ export default function FilledButton({
           node && node.style.setProperty("padding-top", "3.3px", "important")
         }
         loading={loading}
-        disabled={disabled}
+        disabled={disabled || selfDisabled}
         size="large"
         className="text-bold text-sm button-padding"
         type={outline && !selected ? "default" : "primary"}
@@ -43,7 +53,7 @@ export default function FilledButton({
           borderRadius: 5,
           marginTop: !!label && 6,
         }}
-        onClick={to ? () => history.push(to) : onClick}
+        onClick={to ? () => history.push(to) : handleClick}
       >
         {children}
       </Button>

@@ -591,7 +591,9 @@ export default function ModelValidator({ ...props }) {
                 actions: (
                   <Row gutter={12}>
                     <Col>
-                      <DeleteAction onClick={() => deleteFile(e.file_id)} />
+                      <DeleteAction
+                        onClick={(cb) => deleteFile(e.file_id).finally(cb)}
+                      />
                     </Col>
                   </Row>
                 ),

@@ -1,10 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { MdClose, MdEdit } from "react-icons/md";
 
 function MiniButton({ icon, onClick, color }) {
+  const [disabled, setDisabled] = useState(false);
+
+  const handleClick = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (!disabled) {
+      setDisabled(true);
+      onClick(() => setDisabled(false));
+    }
+  };
+
   return (
     <div
-      onClick={onClick}
+      onClick={handleClick}
       size="small"
       style={{
         color: "white",
