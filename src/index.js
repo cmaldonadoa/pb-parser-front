@@ -1,5 +1,5 @@
 import { ConfigProvider } from "antd";
-import esES from "antd/lib/calendar/locale/es_ES";
+import esES from "antd/lib/locale/es_ES";
 import jwt_decode from "jwt-decode";
 import Login from "pages/Login";
 import Manager from "pages/Manager";
