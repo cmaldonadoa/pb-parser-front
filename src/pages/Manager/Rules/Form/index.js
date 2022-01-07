@@ -218,7 +218,7 @@ const FilterWindow = ({
   saved,
   data,
   onChange,
-  addContraint,
+  addConstraint,
   deleteConstraint,
   onChangeConstraint,
   deleteFilter,
@@ -365,7 +365,7 @@ const FilterWindow = ({
             green
             icon={<TiPlus />}
             label="Agregar nueva restricción"
-            onClick={() => addContraint(index)}
+            onClick={() => addConstraint(index)}
           />
         </Col>
         <Col>
@@ -456,10 +456,11 @@ export default function RulesForm() {
     });
 
   const applyFilter = (index) => setSavedFilters([...savedFilters, index]);
+
   const removeAppliedFilter = (index) =>
     setSavedFilters([...savedFilters.filter((e) => e !== index)]);
 
-  const addContraint = (fIndex) =>
+  const addConstraint = (fIndex) =>
     setCurrentData((prevState) => {
       const filters = [...prevState.filters];
       const filter = filters[fIndex];
@@ -795,7 +796,7 @@ export default function RulesForm() {
                         key={e.index}
                         saved={savedFilters.indexOf(e.index) >= 0}
                         data={e}
-                        addContraint={addContraint}
+                        addConstraint={addConstraint}
                         deleteConstraint={deleteConstraint}
                         onChange={onChangeFilter(e.index)}
                         onChangeConstraint={onChangeConstraint(e.index)}
@@ -841,10 +842,11 @@ export default function RulesForm() {
             <FilledButton
               disabled={nextDisabled}
               green
-              onClick={() => {
+              onClick={(cb) => {
                 setCurrentStep(currentStep + 1);
                 setNextDisabled(true);
                 currentStep >= 2 && uploadRule();
+                cb();
               }}
             >
               {currentStep < 2 ? "Siguiente" : "Finalizar"}

@@ -594,10 +594,11 @@ export default function TendersForm() {
             <FilledButton
               disabled={nextDisabled}
               green
-              onClick={() => {
+              onClick={(cb) => {
                 setCurrentStep(currentStep + 1);
                 setNextDisabled(true);
                 currentStep >= 2 && uploadTender();
+                cb();
               }}
             >
               {currentStep < 2 ? "Siguiente" : "Finalizar"}

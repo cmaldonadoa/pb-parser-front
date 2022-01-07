@@ -52,7 +52,7 @@ const UploadWindow = ({ onClick }) => {
   const hiddenFileInput = React.useRef(null);
   const [filename, setFilename] = useState("");
   const [fileType, setFileType] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   const onChange = ({ fileType }) => {
     fileType !== undefined && setFileType(fileType);
@@ -74,12 +74,14 @@ const UploadWindow = ({ onClick }) => {
         </FormRow>
         <FormRow align="bottom">
           <FilledButton
-            loading={loading}
-            disabled={!fileType || loading}
+            disabled={!fileType || uploadingFile}
             label="Selecciona el modelo"
             name={"file"}
             outline
-            onClick={() => hiddenFileInput.current.click()}
+            onClick={(cb) => {
+              hiddenFileInput.current.click();
+              cb();
+            }}
           >
             Subir archivo
           </FilledButton>
@@ -93,13 +95,14 @@ const UploadWindow = ({ onClick }) => {
         accept=".ifc, .ifczip"
         onChange={(e) => {
           const fileUploaded = e.target.files[0];
+          setUploadingFile(true);
           onClick(fileUploaded, fileType, () => {
-            setLoading(false);
             setFilename("");
             setFileType(null);
+            setUploadingFile(false);
           });
           setFilename(fileUploaded.name);
-          setLoading(true);
+          console.log("ch");
         }}
       />
     </Window>
@@ -641,14 +644,15 @@ export default function ModelValidator({ ...props }) {
             <Col>
               <FilledButton
                 disabled={nextDisabled}
-                loading={parsing || validating}
+                loading
                 green
-                onClick={() => {
+                onClick={(cb) => {
                   setNextDisabled(true);
                   currentStep === 0 && setCurrentStep(1);
                   currentStep === 1 && setCurrentStep(2);
                   currentStep === 2 && onClickParse();
                   currentStep === 3 && history.push("/");
+                  cb();
                 }}
               >
                 {currentStep < 2
