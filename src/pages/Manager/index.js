@@ -24,7 +24,7 @@ export default function Manager({ ...props }) {
       .then(
         (success) => !!success.tenders && setNTenders(success.tenders.length)
       )
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
 
     fetch(`${process.env.REACT_APP_API}/self_rules`, {
       method: "GET",
@@ -34,7 +34,7 @@ export default function Manager({ ...props }) {
     })
       .then((response) => response.json())
       .then((success) => !!success.rules && setNRules(success.rules.length))
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, []);
 
   return (

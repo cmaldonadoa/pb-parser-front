@@ -72,7 +72,7 @@ const BasicInfoWindow = ({ data, onChange, disabled, onEdit }) => {
         );
         setRegions(responseRegions);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, []);
 
   useEffect(() => {
@@ -90,7 +90,7 @@ const BasicInfoWindow = ({ data, onChange, disabled, onEdit }) => {
           );
           setCommunes(responseCommunes);
         })
-        .catch((error) => console.log(error));
+        .catch((error) => console.error(error));
   }, [region]);
 
   return (
@@ -509,7 +509,7 @@ export default function TendersForm() {
           setCurrentStep(2);
           setLoaded(true);
         })
-        .catch((error) => console.log(error));
+        .catch((error) => console.error(error));
   }, [setCurrentData, state, currentData, loaded]);
 
   return (

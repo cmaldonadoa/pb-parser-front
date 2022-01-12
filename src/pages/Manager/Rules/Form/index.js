@@ -37,7 +37,7 @@ const BasicInfoWindow = ({ data, onChange }) => {
         );
         setGroups(resposeGroups);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, []);
 
   return (
@@ -302,7 +302,7 @@ const FilterWindow = ({
           .sort((a, b) => a > b);
         setDbEntities(responseEntities);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, []);
 
   return saved ? (
@@ -746,7 +746,7 @@ export default function RulesForm() {
             setCurrentData({ ...r, group: state.groupId });
             setSavedFilters([...r.filters.map((e) => e.index)]);
           })
-          .catch((error) => console.log(error))
+          .catch((error) => console.error(error))
       : addFilter();
   }, [setCurrentData, state]);
 

@@ -102,7 +102,6 @@ const UploadWindow = ({ onClick }) => {
             setUploadingFile(false);
           });
           setFilename(fileUploaded.name);
-          console.log("ch");
         }}
       />
     </Window>
@@ -124,7 +123,7 @@ const AnalyzeWindow = ({ data, onChange }) => {
       .then((success) =>
         setGroups(success.groups.sort((a, b) => a.group_id > b.group_id))
       )
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, []);
 
   return (
@@ -155,7 +154,7 @@ const TenderWindow = ({ data, onChange }) => {
       .then((success) =>
         setTenders(success.tenders.sort((a, b) => a.tender_id > b.tender_id))
       )
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, []);
 
   return (
@@ -414,7 +413,7 @@ export default function ModelValidator({ ...props }) {
       .then((success) =>
         setFiles(success.files.sort((a, b) => a.upload_date < b.upload_date))
       )
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, [fileId]);
 
   const uploadFile = (file, fileType, callback) => {
@@ -547,7 +546,7 @@ export default function ModelValidator({ ...props }) {
       .then((success) =>
         setFiles(success.files.sort((a, b) => a.upload_date < b.upload_date))
       )
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
 
   useEffect(() => {
     if (currentStep < 1) setNextDisabled(!fileId);

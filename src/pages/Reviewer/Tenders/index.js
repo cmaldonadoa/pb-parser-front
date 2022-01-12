@@ -18,7 +18,7 @@ export default function Tenders({ ...props }) {
       .then((success) => {
         setTenders(success.tenders);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, []);
 
   return (

@@ -38,7 +38,7 @@ export default function Rules() {
       .then((success) => {
         setRules(success.rules);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API}/groups`, {
@@ -57,7 +57,7 @@ export default function Rules() {
           !!state ? state.groupId : "" + resposeGroups[0].group_id
         );
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, [state]);
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export default function Rules() {
       .then((success) => {
         setRules(success.rules);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, [currentGroup]);
 
   return (

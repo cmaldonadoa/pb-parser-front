@@ -19,7 +19,7 @@ export default function Reviewer({ ...props }) {
     })
       .then((response) => response.json())
       .then((success) => !!success.files && setNFiles(success.files.length))
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
 
     fetch(`${process.env.REACT_APP_API}/tenders`, {
       method: "GET",
@@ -31,7 +31,7 @@ export default function Reviewer({ ...props }) {
       .then(
         (success) => !!success.tenders && setNTenders(success.tenders.length)
       )
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, []);
 
   return (

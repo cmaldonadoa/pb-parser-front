@@ -34,7 +34,7 @@ export default function Tenders({ ...props }) {
       .then((success) => {
         setTenders(success.tenders);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API}/tenders`, {
@@ -47,7 +47,7 @@ export default function Tenders({ ...props }) {
       .then((success) => {
         setTenders(success.tenders);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.error(error));
   }, []);
 
   return (
