@@ -384,6 +384,74 @@ const ResultWindow = ({ groupName, data }) => {
   );
 };
 
+const Tender = ({ data }) => {
+  const Display = ({ title, children, style }) => (
+    <tr
+      style={{
+        height: 40,
+      }}
+    >
+      <td>
+        <b>{title}: </b>
+      </td>
+      <td>{children}</td>
+    </tr>
+  );
+
+  return (
+    <Window title={"Información del llamado"}>
+      <table style={{ marginLeft: 12, width: "60%" }}>
+        <Display title="Nombre"> {data.name}</Display>
+        <Display title="Dirección"> {data.address}</Display>
+        <Display title="Rol de la propiedad"> {data.property_role}</Display>
+        <Display title="Coeficiente de constructibilidad">
+          {data.constructability_coef}
+        </Display>
+        <Display title="Coeficiente de ocupación de suelo">
+          {data.soil_occupancy_coef}
+        </Display>
+        <Display title="Coeficiente de ocupación de pisos superiores">
+          {data.upper_floors_coef || "No especificado"}
+        </Display>
+        <Display title="Casa o edificio">
+          {data.building_type_name === "HOUSE" ? "Casa" : "Edificio"}
+        </Display>
+        <Display title="Ángulo para rasantes"> {data.angle + "°"}</Display>
+        <Display title="Altura máxima permitida">
+          {data.building_height || "No especificado"}
+        </Display>
+        <Display title="Unidades totales">
+          {data.total_units || "No especificado"}
+        </Display>
+        <Display title="Exigencias de estacionamientos">
+          {data.parking_lots || "No especificado"}
+        </Display>
+
+        <Display
+          style={{ display: "inline" }}
+          title={"Viviendas vulnerables (con acceso universal)"}
+        >
+          {data.vulnerable || 0} ({data.handicap_vulnerable || 0})
+        </Display>
+        <Display
+          style={{ display: "inline" }}
+          title={"Viviendas sectores medios 1 (con acceso universal)"}
+        >
+          {data.medios_1 || 0} ({data.handicap_medios_1 || 0})
+        </Display>
+        <Display
+          style={{ display: "inline" }}
+          title={"Viviendas sectores medios 2 (con acceso universal)"}
+        >
+          {data.medios_2 || 0} ({data.handicap_medios_2 || 0})
+        </Display>
+
+        <Display title="Mínimo de viviendas totales">{data.total || 0}</Display>
+      </table>
+    </Window>
+  );
+};
+
 export default function ModelValidator({ ...props }) {
   const history = useHistory();
 
@@ -401,6 +469,7 @@ export default function ModelValidator({ ...props }) {
   const [validating, setValidating] = useState(false);
 
   const [results, setResults] = useState({});
+  const [tender, setTender] = useState({});
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API}/files`, {
@@ -509,6 +578,21 @@ export default function ModelValidator({ ...props }) {
         return response.json();
       })
       .then((success) =>
+        fetch(`${process.env.REACT_APP_API}/tenders/${tenderId}`, {
+          method: "GET",
+          headers: {
+            Authorization: sessionStorage.getItem("auth"),
+          },
+        })
+      )
+      .then((res) => {
+        if (res.status === 200) return res.json();
+        else throw new Error();
+      })
+      .then((success) => {
+        setTender(success.tender);
+      })
+      .then((success) =>
         fetch(`${process.env.REACT_APP_API}/results/${fileId}`, {
           method: "GET",
           headers: {
@@ -610,9 +694,12 @@ export default function ModelValidator({ ...props }) {
             onChange={({ groupIds }) => setGroupIds(groupIds)}
           />
         ) : (
-          Object.keys(results).map((k) => (
-            <ResultWindow key={k} data={results[k]} groupName={k} />
-          ))
+          <>
+            <Tender data={tender} />
+            {Object.keys(results).map((k) => (
+              <ResultWindow key={k} data={results[k]} groupName={k} />
+            ))}
+          </>
         )}
       </div>
 
