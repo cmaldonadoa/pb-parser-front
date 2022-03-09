@@ -223,11 +223,16 @@ const ResultWindow = ({ groupName, data }) => {
           title: `${m.entity} (ID: ${m.id})`,
           key: `0-${i}-${j}`,
           icon: null,
-          children: Object.keys(m.values).map((v, k) => ({
-            title: `${v} = ${m.values[v]}`,
-            key: `0-${i}-${j}-${k}`,
-            icon: null,
-          })),
+          children: Object.keys(m.values).map((v, k) => {
+            const values = m.values[v].map((value) =>
+              value === null || value === undefined ? "No especificado" : value
+            );
+            return {
+              title: `${v} = ${values}`,
+              key: `0-${i}-${j}-${k}`,
+              icon: null,
+            };
+          }),
         })),
       }));
 
@@ -401,52 +406,56 @@ const Tender = ({ data }) => {
   return (
     <Window title={"Información del llamado"}>
       <table style={{ marginLeft: 12, width: "60%" }}>
-        <Display title="Nombre"> {data.name}</Display>
-        <Display title="Dirección"> {data.address}</Display>
-        <Display title="Rol de la propiedad"> {data.property_role}</Display>
-        <Display title="Coeficiente de constructibilidad">
-          {data.constructability_coef}
-        </Display>
-        <Display title="Coeficiente de ocupación de suelo">
-          {data.soil_occupancy_coef}
-        </Display>
-        <Display title="Coeficiente de ocupación de pisos superiores">
-          {data.upper_floors_coef || "No especificado"}
-        </Display>
-        <Display title="Casa o edificio">
-          {data.building_type_name === "HOUSE" ? "Casa" : "Edificio"}
-        </Display>
-        <Display title="Ángulo para rasantes"> {data.angle + "°"}</Display>
-        <Display title="Altura máxima permitida">
-          {data.building_height || "No especificado"}
-        </Display>
-        <Display title="Unidades totales">
-          {data.total_units || "No especificado"}
-        </Display>
-        <Display title="Exigencias de estacionamientos">
-          {data.parking_lots || "No especificado"}
-        </Display>
+        <tbody>
+          <Display title="Nombre"> {data.name}</Display>
+          <Display title="Dirección"> {data.address}</Display>
+          <Display title="Rol de la propiedad"> {data.property_role}</Display>
+          <Display title="Coeficiente de constructibilidad">
+            {data.constructability_coef}
+          </Display>
+          <Display title="Coeficiente de ocupación de suelo">
+            {data.soil_occupancy_coef}
+          </Display>
+          <Display title="Coeficiente de ocupación de pisos superiores">
+            {data.upper_floors_coef || "No especificado"}
+          </Display>
+          <Display title="Casa o edificio">
+            {data.building_type_name === "HOUSE" ? "Casa" : "Edificio"}
+          </Display>
+          <Display title="Ángulo para rasantes"> {data.angle + "°"}</Display>
+          <Display title="Altura máxima permitida">
+            {data.building_height || "No especificado"}
+          </Display>
+          <Display title="Unidades totales">
+            {data.total_units || "No especificado"}
+          </Display>
+          <Display title="Exigencias de estacionamientos">
+            {data.parking_lots || "No especificado"}
+          </Display>
 
-        <Display
-          style={{ display: "inline" }}
-          title={"Viviendas vulnerables (con acceso universal)"}
-        >
-          {data.vulnerable || 0} ({data.handicap_vulnerable || 0})
-        </Display>
-        <Display
-          style={{ display: "inline" }}
-          title={"Viviendas sectores medios 1 (con acceso universal)"}
-        >
-          {data.medios_1 || 0} ({data.handicap_medios_1 || 0})
-        </Display>
-        <Display
-          style={{ display: "inline" }}
-          title={"Viviendas sectores medios 2 (con acceso universal)"}
-        >
-          {data.medios_2 || 0} ({data.handicap_medios_2 || 0})
-        </Display>
+          <Display
+            style={{ display: "inline" }}
+            title={"Viviendas vulnerables (con acceso universal)"}
+          >
+            {data.vulnerable || 0} ({data.handicap_vulnerable || 0})
+          </Display>
+          <Display
+            style={{ display: "inline" }}
+            title={"Viviendas sectores medios 1 (con acceso universal)"}
+          >
+            {data.medios_1 || 0} ({data.handicap_medios_1 || 0})
+          </Display>
+          <Display
+            style={{ display: "inline" }}
+            title={"Viviendas sectores medios 2 (con acceso universal)"}
+          >
+            {data.medios_2 || 0} ({data.handicap_medios_2 || 0})
+          </Display>
 
-        <Display title="Mínimo de viviendas totales">{data.total || 0}</Display>
+          <Display title="Mínimo de viviendas totales">
+            {data.total || 0}
+          </Display>
+        </tbody>
       </table>
     </Window>
   );
